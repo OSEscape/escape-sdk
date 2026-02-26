@@ -1,0 +1,18 @@
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+  except:
+    # Enums mirror game varbits where 0 is a meaningful value (not "unspecified")
+    - ENUM_ZERO_VALUE_SUFFIX
+  ignore_only:
+    # Bidirectional streaming uses ClientMessage/ServerMessage (standard pattern)
+    RPC_REQUEST_STANDARD_NAME:
+      - proto/bridge/v1/bridge.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - proto/bridge/v1/bridge.proto
+breaking:
+  use:
+    - FILE

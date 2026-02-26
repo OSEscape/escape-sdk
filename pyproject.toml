@@ -1,0 +1,168 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "escape"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "grpcio>=1.60.0",
+    "loguru>=0.7.3",
+    "numba>=0.60.0",
+    "numpy>=1.26.0,<2.4",
+    "protobuf>=4.25.0",
+    "py-trees>=2.4.0",
+    "python-dotenv>=1.2.1",
+    "pillow>=12.0.0",
+    "python-xlib>=0.33",
+    "evdev>=1.9.0",
+    "pyautogui>=0.9.54",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
+    "basedpyright>=1.37.0",
+    "pytest>=9.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "build>=1.4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["escape"]
+artifacts = ["*.typed"]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+indent-width = 4
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    "_proto",
+    "constants",
+]
+
+[tool.ruff.lint]
+# Enable pycodestyle (E, W), Pyflakes (F), isort (I), and pydocstyle (D)
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "ISC", # implicit-str-concat
+    "RUF", # ruff-specific rules
+    "D",   # pydocstyle (PEP 257 docstrings)
+]
+
+# Ignore rules - keep minimal, only for legitimate cases
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "E402",  # Module level import not at top (needed for sys.path modification)
+    "D100",  # Missing docstring in public module
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
+    "D105",  # Missing docstring in magic method
+    "D107",  # Missing docstring in __init__
+    "D203",  # 1 blank line before class docstring (conflicts with D211)
+    "D213",  # Summary on second line (conflicts with D212)
+    "D400",  # First line should end with a period
+    "D415",  # First line should end with period/question/exclamation (same intent as D400)
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["escape"]
+
+[tool.ruff.lint.pydocstyle]
+
+[tool.ruff.lint.per-file-ignores]
+"escape/constants/_interfaceid.py" = ["E741", "N801"]  # Generated file - ignore ambiguous names and class naming
+"escape/constants/_spriteid.py" = ["N801"]  # Generated file - ignore class naming
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.4.0"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "live: marks tests that require a running game client",
+    "smoke: quick validation tests",
+    "input: tests that send input to the game",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["escape"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/_proto/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+# Basedpyright configuration
+[tool.basedpyright]
+pythonVersion = "3.14"
+typeCheckingMode = "basic"
+exclude = ["escape/_proto", "escape/constants", "**/.venv"]
+extraPaths = ["escape/_proto"]
+reportMissingImports = "warning"
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportOptionalCall = "warning"
+reportOptionalIterable = "warning"
+reportOptionalContextManager = "warning"

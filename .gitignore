@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyi
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Generated proto (regenerate with buf generate)
+escape/_proto/
+
+# Generated constants (regenerate with make codegen)
+escape/constants/*.py
+escape/constants/.version
+
+# Generated resources (regenerate with make resources)
+escape/_resources/questdata.py
+
+# Java/Gradle
+server/build/
+server/.gradle/
+*.jar
+!server/gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+.zed/*
+!.zed/settings.json
+
+# OS
+.DS_Store
+tmp/
+bin
+.env
+test_*.py
+test.py
+dist/
+.grimp_cache
+.specify
+playground/
+testing.ipynb
+playercontext_integration_checklist.md
+PATH_STEP_TYPES.md
+diag_watchtower.py
+_inspect_transports.py
+bt_lava_runes.py
+blocked-tile-navigation.md

@@ -1,0 +1,664 @@
+syntax = "proto3";
+package bridge.v1;
+
+import "google/protobuf/empty.proto";
+
+option java_package = "bridge.proto.v1";
+option java_multiple_files = true;
+
+service BridgeService {
+  rpc GetWidgetProperties(GetWidgetRequest) returns (GetWidgetResponse);
+  rpc GetWidgetPropertiesBatch(GetWidgetBatchedRequest) returns (GetWidgetArrayResponse);
+  rpc GetWidgetChild(GetWidgetChildRequest) returns (GetWidgetResponse);
+  rpc GetWidgetChildren(GetWidgetRequest) returns (GetWidgetArrayResponse);
+  rpc GetWidgetChildrenMasked(GetWidgetChildrenMaskedRequest) returns (GetWidgetArrayResponse);
+  rpc GetWidgetChildrenBatch(GetWidgetBatchedRequest) returns (GetWidgetArrayResponse);
+  rpc GetItemContainer(GetItemContainerRequest) returns (GetItemContainerResponse);
+
+  // Clickbox tracking
+  rpc StartClickboxTracking(StartClickboxTrackingRequest) returns (google.protobuf.Empty);
+  rpc StopClickboxTracking(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Drawing overlay
+  rpc AddBox(AddBoxRequest) returns (google.protobuf.Empty);
+  rpc AddCircle(AddCircleRequest) returns (google.protobuf.Empty);
+  rpc AddLine(AddLineRequest) returns (google.protobuf.Empty);
+  rpc AddPolygon(AddPolygonRequest) returns (google.protobuf.Empty);
+  rpc AddText(AddTextRequest) returns (google.protobuf.Empty);
+  rpc AddImage(AddImageRequest) returns (google.protobuf.Empty);
+  rpc ClearDrawing(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc ClearDrawingTag(ClearDrawingTagRequest) returns (google.protobuf.Empty);
+  rpc BatchDraw(BatchDrawRequest) returns (google.protobuf.Empty);
+
+  // Entity streaming - subscribe-as-you-go
+  rpc StreamNpcs(StreamNpcsRequest) returns (NpcUpdate);
+  rpc StreamObjects(StreamObjectsRequest) returns (SceneObjectsUpdate);
+  rpc StreamGroundItems(google.protobuf.Empty) returns (GroundItemsUpdate);
+
+  // One-time snapshots (no streaming subscription)
+  rpc GetAllNpcs(google.protobuf.Empty) returns (NpcUpdate);
+  rpc GetAllObjects(google.protobuf.Empty) returns (SceneObjectsUpdate);
+  rpc GetAllGroundItems(google.protobuf.Empty) returns (GroundItemsUpdate);
+
+  // Login
+  rpc SetCredentials(SetCredentialsRequest) returns (google.protobuf.Empty);
+  rpc GetLoginIndex(google.protobuf.Empty) returns (GetLoginIndexResponse);
+
+  // Streaming - server pushes updates, client sends subscribe/ack
+  rpc Subscribe(stream ClientMessage) returns (stream ServerMessage);
+}
+
+// =============================================================================
+// Streaming API
+// =============================================================================
+
+// Client -> Server messages
+message ClientMessage {
+  oneof message {
+    Subscribe subscribe = 1;
+  }
+}
+
+// Subscribe to updates
+message Subscribe {
+  SubscriptionOptions options = 1;
+}
+
+message SubscriptionOptions {
+  bool enable_all = 1;
+}
+
+// Server -> Client messages
+message ServerMessage {
+  oneof message {
+    VarpSnapshot snapshot = 1;     // Initial full state on subscribe
+    ChatSnapshot chat_snapshot = 2; // Initial chat state on subscribe
+    StatsSnapshot stat_snapshot = 3; // Initial stats state on subscribe
+    VarcIntSnapshot varc_int_snapshot = 4; // Initial varc int state on subscribe
+    VarcStrSnapshot varc_str_snapshot = 5; // Initial varc str state
+    InterfaceSnapshot interface_snapshot = 6; // Initial active interfaces state on subscribe
+    VarbitChanged varbit_changed = 7; // Varbit change notification
+    ChatChanged chat_changed = 8;   // New chat message
+    StatChanged stat_changed = 9;   // Stat change notification
+    VarcIntChanged varc_int_changed = 10; // Varc int change notification
+    VarcStrChanged varc_str_changed = 11; // Varc str change notification
+    AnimationChanged animation_changed = 12; // Player animation change
+    ItemContainerChanged item_container_changed = 13; // Item container change
+    GameTickUpdate game_tick_update = 14; // Pushed every game tick (600ms)
+    PostMenuSortUpdate post_menu_sort_update = 15; // Post menu sort notification
+    MenuOptionClickUpdate menu_option_click_update = 16; // Menu option click notification
+    GameStateChange game_state_change = 17; // Game state change notification
+    WorldViewLoad world_view_load = 18; // World view load notification
+    GroundItemsUpdate ground_items_update = 19; // Current ground items state
+    MenuOpenUpdate menu_open_update = 20; // Current menu information when open
+    SelectedWidgetUpdate selected_widget_update = 21; // Currently selected widget information
+    ActiveInterfacesUpdate active_interfaces_update = 22; // Currently active interface information
+    WorldEntityUpdate world_entity_update = 23;
+    CameraChanged camera_changed = 24;
+    SceneObjectsUpdate scene_objects_update = 25;
+    Error error = 26;                // Error notification
+    WarmupComplete warmup_complete = 27;  // Sent after all initial snapshots
+    ClickboxUpdate clickbox_update = 28;  // Clickbox tracking update
+    NpcUpdate npc_update = 29;  // NPC streaming update
+    CollisionUpdate collision_update = 30;  // Collision flag patches (door open/close)
+  }
+}
+
+message CollisionUpdate {
+  repeated int32 indices = 1;  // Flat offsets into [planes][x][y] array
+  repeated int32 flags = 2;    // New flag value at each index
+}
+
+message Varp {
+  int32 varp_id = 1;
+  int32 varbit_id = 2;  // -1 if not a varbit
+  int32 value = 3;
+}
+
+message VarpSnapshot {
+  repeated Varp varps = 1;
+}
+
+message VarbitChanged {
+  Varp varbit_changed = 1;
+}
+
+message ChatSnapshot {
+  repeated ChatMessage messages = 1;
+}
+
+message ChatMessage {
+  string type = 1;
+  string sender = 2;
+  string message = 3;
+}
+
+message ChatChanged {
+  ChatMessage message = 1;
+}
+
+message Stat {
+  string skill = 1;
+  int32 xp = 2;
+  int32 level = 3;
+  int32 boosted_level = 4;
+}
+
+message StatsSnapshot {
+  repeated Stat stats = 1;
+}
+
+message StatChanged {
+  Stat stat = 1;
+}
+
+message VarcInt {
+  int32 varc_id = 1;
+  int32 value = 2;
+}
+
+message VarcIntSnapshot {
+  repeated VarcInt varcs = 1;
+}
+
+message VarcIntChanged {
+  VarcInt varc_int_changed = 1;
+}
+
+message VarcStr {
+  int32 varc_id = 1;
+  string value = 2;
+}
+
+message VarcStrSnapshot {
+  repeated VarcStr varcs = 1;
+}
+
+message VarcStrChanged {
+  VarcStr varc_str_changed = 1;
+}
+
+message AnimationChanged {
+  string actor_name = 1;
+  int32 animation_id = 2;
+  int32 location = 3; //Packed coord
+}
+
+message InterfaceSnapshot {
+  repeated int32 active_interfaces = 1;
+}
+
+message ActiveInterfacesUpdate {
+  repeated int32 active_interfaces = 1;
+}
+
+message Item{
+  int32 id = 1;
+  string name = 2;
+  int32 quantity = 3;
+  bool noted = 4;
+  int32 slot = 5;
+}
+
+message ItemContainerChanged {
+  int32 container_id = 1;
+  bool is_special = 2; // equipment, bank, inventory
+  repeated Item items = 3;
+}
+
+message GameTickUpdate {
+  int32 tick = 1;
+  int32 energy = 2;
+  int32 scene_x = 3;
+  int32 scene_y = 4;
+  int32 target_x = 5;
+  int32 target_y = 6;
+  int32 interacting_index = 7; // -1 = none, >= 0 = NPC array index
+  int32 canvas_offset_x = 8;
+  int32 canvas_offset_y = 9;
+  int32 plane = 10;
+}
+
+message MenuOpenUpdate {
+  bool menu_open = 1;
+  int32 menu_x = 2;
+  int32 menu_y = 3;
+  int32 menu_width = 4;
+  int32 menu_height = 5;
+  bool scrollable = 6;
+  bool has_sub_menu = 7;
+  int32 sub_menu_x = 8;
+  int32 sub_menu_y = 9;
+  int32 sub_menu_width = 10;
+  int32 sub_menu_height = 11;
+}
+
+message SelectedWidgetUpdate {
+  int32 selected_widget_id = 1;
+  int32 index = 2;
+}
+
+message CameraChanged {
+  int32 camera_x = 1;
+  int32 camera_y = 2;
+  int32 camera_z = 3;
+  double pitch = 4;
+  double yaw = 5;
+  int32 scale = 6;
+}
+
+message GroundItem {
+  int32 id = 1;
+  int32 quantity = 2;
+  string name = 3;
+  int32 packed_location = 4;
+  int32 ownership = 5; 
+}
+
+message GroundItemsUpdate {
+  repeated GroundItem ground_items = 1;
+}
+
+message WorldEntityUpdate {
+  int32 entity_x = 1;
+  int32 entity_y = 2;
+  int32 orientation = 3;
+  int32 ground_height_offset = 4;
+}
+
+message SubMenu {
+  int32 parent_index = 1;
+  repeated string options = 2;
+  repeated string targets = 3;
+  repeated string menu_actions = 4;
+}
+
+message PostMenuSortUpdate {
+  repeated string options = 1;
+  repeated string targets = 2;
+  repeated string menu_actions = 3;
+  repeated SubMenu sub_menus = 4;
+}
+
+message GameObject {
+  int32 type = 1;
+  int32 id = 2;
+  int32 packed_location = 3;
+  int32 orientation = 4;
+  int32 size_x = 5;
+  int32 size_y = 6;
+  string name = 7;
+  repeated string actions = 8;
+}
+
+message SceneObjectsUpdate {
+  repeated GameObject objects = 1;
+}
+
+message WorldViewLoad {
+  int32 plane = 1;
+  int32 base_x = 2;
+  int32 base_y = 3;
+  int32 size_x = 4;
+  int32 size_y = 5;
+  repeated int32 tile_heights = 6;
+  repeated bool bridge_flags = 7;
+  int32 bounds_x = 8;
+  int32 bounds_y = 9;
+  int32 bounds_width = 10;
+  int32 bounds_height = 11;
+  repeated int32 collision_flags = 12;          // Flattened [planes][x][y], raw CollisionData flags
+  repeated int32 instance_template_chunks = 13; // Flattened [planes][chunks_x][chunks_y], only when is_instance
+  bool is_instance = 14;
+}
+
+message GameStateChange {
+  string state = 1;
+}
+
+message MenuOptionClickUpdate {
+  string menu_option = 1;
+  string menu_target = 2;
+  int32 id = 3;
+  int32 widget_id = 4;
+  int32 param0 = 5;
+  int32 param1 = 6;
+  string menu_action = 7;
+  int32 click_location = 8; //Packed coord
+}
+
+// Widget
+
+enum WidgetProperty {
+  WIDGET_PROP_UNSPECIFIED = 0;
+  WIDGET_PROP_ACTIONS = 1;
+  WIDGET_PROP_ANIMATION_ID = 2;
+  WIDGET_PROP_BORDER_TYPE = 3;
+  WIDGET_PROP_BOUNDS = 4;
+  WIDGET_PROP_CANVAS_LOCATION = 5;
+  WIDGET_PROP_CLICK_MASK = 6;
+  WIDGET_PROP_CONTENT_TYPE = 7;
+  WIDGET_PROP_DRAG_DEAD_TIME = 8;
+  WIDGET_PROP_DRAG_DEAD_ZONE = 9;
+  WIDGET_PROP_DRAG_PARENT = 10;
+  WIDGET_PROP_FONT = 11;
+  WIDGET_PROP_FONT_ID = 12;
+  WIDGET_PROP_HEIGHT = 13;
+  WIDGET_PROP_HEIGHT_MODE = 14;
+  WIDGET_PROP_ID = 15;
+  WIDGET_PROP_INDEX = 16;
+  WIDGET_PROP_ITEM_ID = 17;
+  WIDGET_PROP_ITEM_QUANTITY = 18;
+  WIDGET_PROP_ITEM_QUANTITY_MODE = 19;
+  WIDGET_PROP_LINE_HEIGHT = 20;
+  WIDGET_PROP_MODEL_ID = 21;
+  WIDGET_PROP_MODEL_TYPE = 22;
+  WIDGET_PROP_MODEL_ZOOM = 23;
+  WIDGET_PROP_NAME = 24;
+  WIDGET_PROP_NO_CLICK_THROUGH = 25;
+  WIDGET_PROP_NO_SCROLL_THROUGH = 26;
+  WIDGET_PROP_ON_INV_TRANSMIT = 27;
+  WIDGET_PROP_ON_KEY = 28;
+  WIDGET_PROP_ON_LOAD = 29;
+  WIDGET_PROP_ON_OP = 30;
+  WIDGET_PROP_ON_VAR_TRANSMIT = 31;
+  WIDGET_PROP_OPACITY = 32;
+  WIDGET_PROP_ORIGINAL_HEIGHT = 33;
+  WIDGET_PROP_ORIGINAL_WIDTH = 34;
+  WIDGET_PROP_ORIGINAL_X = 35;
+  WIDGET_PROP_ORIGINAL_Y = 36;
+  WIDGET_PROP_PARENT = 37;
+  WIDGET_PROP_PARENT_ID = 38;
+  WIDGET_PROP_RELATIVE_X = 39;
+  WIDGET_PROP_RELATIVE_Y = 40;
+  WIDGET_PROP_ROTATION_X = 41;
+  WIDGET_PROP_ROTATION_Y = 42;
+  WIDGET_PROP_ROTATION_Z = 43;
+  WIDGET_PROP_SCROLL_HEIGHT = 44;
+  WIDGET_PROP_SCROLL_WIDTH = 45;
+  WIDGET_PROP_SCROLL_X = 46;
+  WIDGET_PROP_SCROLL_Y = 47;
+  WIDGET_PROP_SPRITE_ID = 48;
+  WIDGET_PROP_SPRITE_TILING = 49;
+  WIDGET_PROP_STATIC_CHILDREN = 50;
+  WIDGET_PROP_TARGET_PRIORITY = 51;
+  WIDGET_PROP_TARGET_VERB = 52;
+  WIDGET_PROP_TEXT = 53;
+  WIDGET_PROP_TEXT_COLOR = 54;
+  WIDGET_PROP_TEXT_SHADOWED = 55;
+  WIDGET_PROP_TYPE = 56;
+  WIDGET_PROP_VAR_TRANSMIT_TRIGGER = 57;
+  WIDGET_PROP_WIDTH = 58;
+  WIDGET_PROP_WIDTH_MODE = 59;
+  WIDGET_PROP_X_POSITION_MODE = 60;
+  WIDGET_PROP_X_TEXT_ALIGNMENT = 61;
+  WIDGET_PROP_Y_POSITION_MODE = 62;
+  WIDGET_PROP_Y_TEXT_ALIGNMENT = 63;
+  WIDGET_PROP_IS_HIDDEN = 64;
+}
+
+message Rectangle {
+  int32 x = 1;
+  int32 y = 2;
+  int32 width = 3;
+  int32 height = 4;
+}
+
+message Point {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message Polygon {
+  repeated Point points = 1;
+}
+
+message DataValue {                                                                                                                                                                               
+  oneof value {                                                                                                                                                                                   
+    int32 i32 = 1;                                                                                                                                                                                
+    int64 i64 = 2;                                                                                                                                                                                
+    string str = 3;                                                                                                                                                                               
+    bool b = 4;                                                                                                                                                                                   
+    Rectangle rectangle = 5;
+    Point point = 6;                                                                                                                                                               
+  }                                                                                                                                                                                               
+} 
+
+message DataValueList {                                                                                                                                                                           
+  repeated DataValue values = 1;                                                                                                                                                                  
+}                                                                                                                                                                                                 
+                                                                                                                                                                                                  
+message WidgetValue {                                                                                                                                                                             
+  oneof value {                                                                                                                                                                                   
+    DataValue single_value = 1;                                                                                                                                                                   
+    DataValueList multiple_values = 2;                                                                                                                                                            
+  }                                                                                                                                                                                               
+}  
+
+message WidgetResponse{
+  map<string, WidgetValue> values = 1;
+}
+
+message GetWidgetRequest {
+  int32 widget_id = 1;
+  uint64 mask = 2;
+}
+
+message GetWidgetBatchedRequest {
+  repeated int32 widget_ids = 1;
+  repeated uint64 mask = 2;
+}
+
+message GetWidgetChildRequest {
+  int32 widget_id = 1;
+  int32 child_index = 2;
+  uint64 mask = 3;
+}
+
+message GetWidgetChildrenMaskedRequest {
+  int32 widget_id = 1;
+  repeated int32 child_mask = 2;
+  uint64 mask = 3;
+}
+
+message GetWidgetResponse {
+  WidgetResponse widget = 1;
+}
+
+message GetWidgetArrayResponse {
+  repeated WidgetResponse widget_array = 1;
+}
+
+message GetItemContainerRequest {
+  int32 container_id = 1;
+}
+
+message GetItemContainerResponse {
+  repeated Item items = 1;
+}
+
+message Error {
+  string message = 1;
+  int32 code = 2;
+}
+
+message WarmupComplete {
+  // Signals that all initial snapshots have been sent
+  // Client should wait for this before considering warmup complete
+}
+
+// =============================================================================
+// Clickbox Tracking
+// =============================================================================
+
+message StartClickboxTrackingRequest {
+  oneof target {
+    GroundItemTarget ground_item = 1;
+    NpcTarget npc = 2;
+    ObjectTarget object = 3;
+    TileTarget tile = 4;
+  }
+  optional bool debug = 5;
+}
+
+message GroundItemTarget {
+  int32 packed_location = 1;  // World coordinate (packed)
+  int32 item_id = 2;           // To disambiguate item stacks
+}
+
+message NpcTarget {
+  int32 npc_index = 1;  // Index in client.getNpcs() array (NOT npc_id)
+}
+
+message ObjectTarget {
+  int32 packed_location = 1;  // World coordinate (packed)
+  int32 object_id = 2;         // To match specific object
+}
+
+message TileTarget {
+  int32 packed_location = 1;  // World coordinate (packed)
+}
+
+message ClickboxUpdate {
+  bool target_exists = 1;           // False when target disappears
+  repeated int32 vertices = 2;      // Flat array: [x0,y0, x1,y1, x2,y2, ...]
+}
+
+// =============================================================================
+// Drawing Overlay
+// =============================================================================
+
+message AddBoxRequest {
+  int32 x = 1;
+  int32 y = 2;
+  int32 width = 3;
+  int32 height = 4;
+  int32 argb_color = 5;
+  bool filled = 6;
+  string tag = 7;
+}
+
+message AddCircleRequest {
+  int32 x = 1;
+  int32 y = 2;
+  int32 radius = 3;
+  int32 argb_color = 4;
+  bool filled = 5;
+  string tag = 6;
+}
+
+message AddLineRequest {
+  int32 x1 = 1;
+  int32 y1 = 2;
+  int32 x2 = 3;
+  int32 y2 = 4;
+  int32 argb_color = 5;
+  int32 thickness = 6;
+  string tag = 7;
+}
+
+message AddPolygonRequest {
+  repeated int32 x_points = 1;
+  repeated int32 y_points = 2;
+  int32 argb_color = 3;
+  bool filled = 4;
+  string tag = 5;
+}
+
+message AddTextRequest {
+  string text = 1;
+  int32 x = 2;
+  int32 y = 3;
+  int32 argb_color = 4;
+  int32 font_size = 5;
+  string tag = 6;
+}
+
+message AddImageRequest {
+  repeated int32 argb_pixels = 1;
+  int32 img_width = 2;
+  int32 img_height = 3;
+  int32 x = 4;
+  int32 y = 5;
+  string tag = 6;
+}
+
+message ClearDrawingTagRequest {
+  string tag = 1;
+}
+
+message DrawCommand {
+  oneof command {
+    AddBoxRequest box = 1;
+    AddCircleRequest circle = 2;
+    AddLineRequest line = 3;
+    AddPolygonRequest polygon = 4;
+    AddTextRequest text = 5;
+    AddImageRequest image = 6;
+  }
+}
+
+message BatchDrawRequest {
+  repeated DrawCommand commands = 1;
+  string clear_tag = 2;
+}
+
+// =============================================================================
+// NPC Streaming
+// =============================================================================
+
+message NpcData {
+  int32 index = 1;
+  int32 id = 2;
+  string name = 3;
+  repeated int32 overhead_sprite_ids = 4;
+  repeated int32 overhead_archive_ids = 5;
+  int32 world_x = 6;
+  int32 world_y = 7;
+  int32 plane = 8;
+  int32 animation = 9;
+  int32 pose_animation = 10;
+  int32 orientation = 11;
+  int32 combat_level = 12;
+  bool is_dead = 13;
+  int32 health_ratio = 14;
+  int32 health_scale = 15;
+  int32 interacting_index = 16;
+  string overhead_text = 17;
+  repeated string actions = 18;
+  int32 size = 19;
+  repeated int32 spot_anim_ids = 20;
+}
+
+message NpcUpdate {
+  repeated NpcData npcs = 1;
+}
+
+// =============================================================================
+// Entity Streaming Requests
+// =============================================================================
+
+message StreamNpcsRequest {
+  repeated int32 ids = 1;
+  repeated string names = 2;
+  bool stream_all = 3;
+}
+
+message StreamObjectsRequest {
+  repeated int32 ids = 1;
+  repeated string names = 2;
+  bool stream_all = 3;
+}
+
+// =============================================================================
+// Login
+// =============================================================================
+
+message SetCredentialsRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message GetLoginIndexResponse {
+  int32 login_index = 1;
+}
