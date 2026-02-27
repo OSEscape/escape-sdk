@@ -151,7 +151,9 @@ class Walk:
                 # Blocked — stop here
                 logger.debug(
                     "walk: live collision blocks step {} → {} (di={})",
-                    (ax, ay), (bx, by), di,
+                    (ax, ay),
+                    (bx, by),
+                    di,
                 )
                 break
 
@@ -191,7 +193,9 @@ class Walk:
         if quad is None:
             return Status.RUNNING
 
-        logger.debug("walk → click ({}, {}) idx={}/{}", tile_wx, tile_wy, target_idx, len(world_tiles))
+        logger.debug(
+            "walk → click ({}, {}) idx={}/{}", tile_wx, tile_wy, target_idx, len(world_tiles)
+        )
         self._walker._click_walk_quad(quad)
         return Status.RUNNING
 
@@ -234,7 +238,9 @@ class Walk:
             return None
 
         clickable_arr = np.array(clickable)
-        c_dist = np.maximum(np.abs(wx[clickable_arr] - player_x), np.abs(wy[clickable_arr] - player_y))
+        c_dist = np.maximum(
+            np.abs(wx[clickable_arr] - player_x), np.abs(wy[clickable_arr] - player_y)
+        )
 
         far_enough = c_dist >= 3
         if far_enough.any():
@@ -243,7 +249,10 @@ class Walk:
         return int(clickable_arr[np.argmax(c_dist)])
 
     def _try_live_approach(
-        self, player_wx: int, player_wy: int, plane: int,
+        self,
+        player_wx: int,
+        player_wy: int,
+        plane: int,
     ) -> list[tuple[int, int, int]] | None:
         """Try live BFS to target, falling back to bfs_to_object if blocked."""
         collision = self._cache.collision_flags
@@ -280,11 +289,19 @@ class Walk:
                 obj_sx = obj.sw_x - base_x
                 obj_sy = obj.sw_y - base_y
                 px, py, n = bfs_to_object(
-                    flags, sx, sy, obj_sx, obj_sy, obj.size_x, obj.size_y,
+                    flags,
+                    sx,
+                    sy,
+                    obj_sx,
+                    obj_sy,
+                    obj.size_x,
+                    obj.size_y,
                 )
                 if n > 1:
                     logger.debug(
-                        "walk: live bfs_to_object '{}' → {} tiles", obj.name, n,
+                        "walk: live bfs_to_object '{}' → {} tiles",
+                        obj.name,
+                        n,
                     )
                     return [(int(px[i]) + base_x, int(py[i]) + base_y, plane) for i in range(n)]
                 break

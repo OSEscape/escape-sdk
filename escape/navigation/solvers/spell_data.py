@@ -21,6 +21,7 @@ _S = InterfaceID.MagicSpellbook
 
 SPELLBOOK_VARBIT = VarbitID.SPELLBOOK
 
+
 @dataclass(frozen=True, slots=True)
 class SpellInfo:
     widget_id: int

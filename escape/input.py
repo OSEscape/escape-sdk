@@ -1,5 +1,7 @@
 """Input module: RuneLite window management, mouse, and keyboard."""
 
+from __future__ import annotations
+
 import contextlib
 import random
 import subprocess
@@ -522,7 +524,11 @@ class Mouse:
         return offset_polygon
 
     def _move_to(
-        self, x: int, y: int, within_ms: int | None = None, linear: bool = False,
+        self,
+        x: int,
+        y: int,
+        within_ms: int | None = None,
+        linear: bool = False,
     ) -> None:
         self._prepare()
 
@@ -562,7 +568,11 @@ class Mouse:
         self._click_button(button)
 
     def move_to(
-        self, x: int, y: int, within_ms: int | None = None, linear: bool = False,
+        self,
+        x: int,
+        y: int,
+        within_ms: int | None = None,
+        linear: bool = False,
     ) -> None:
         """Move the mouse cursor to the given window-relative coordinates."""
         self._move_to(x, y, within_ms=within_ms, linear=linear)

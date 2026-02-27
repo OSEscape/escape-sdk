@@ -28,7 +28,9 @@ class SpellTeleportSolver:
             spellbook = self._extract_spellbook(transport)
             spell = lookup_spell(transport.name, spellbook=spellbook)
             if spell is None:
-                logger.warning("spell-solver: unknown spell '{}' (spellbook={})", transport.name, spellbook)
+                logger.warning(
+                    "spell-solver: unknown spell '{}' (spellbook={})", transport.name, spellbook
+                )
                 return Status.FAILURE
 
             def cast() -> bool:
@@ -37,7 +39,9 @@ class SpellTeleportSolver:
                 magic = Magic()
                 logger.debug(
                     "spell-solver: casting '{}' widget=0x{:08X} option='{}'",
-                    transport.name, spell.widget_id, spell.option,
+                    transport.name,
+                    spell.widget_id,
+                    spell.option,
                 )
                 ok = magic.cast_spell(spell.widget_id, option=spell.option)
                 logger.debug("spell-solver: cast '{}' → {}", transport.name, ok)

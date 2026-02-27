@@ -1,5 +1,7 @@
 """Scene utilities for working with tiles in the loaded scene."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import numpy as np

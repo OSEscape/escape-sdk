@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -143,18 +145,24 @@ class ProcessedCache:
             self._world_view = proto_obj
             self._world_view_version += 1
             wv = proto_obj
-            num_planes = len(wv.tile_heights) // (wv.size_x * wv.size_y) if wv.size_x and wv.size_y else 0
+            num_planes = (
+                len(wv.tile_heights) // (wv.size_x * wv.size_y) if wv.size_x and wv.size_y else 0
+            )
             if wv.collision_flags and num_planes:
                 # Collision is per-tile (size-1 x size-1), not per-vertex like heights
                 col_x = wv.size_x - 1
                 col_y = wv.size_y - 1
-                self._collision_flags = np.array(wv.collision_flags, dtype=np.int32).reshape(num_planes, col_x, col_y)
+                self._collision_flags = np.array(wv.collision_flags, dtype=np.int32).reshape(
+                    num_planes, col_x, col_y
+                )
             else:
                 self._collision_flags = None
             self._is_instance = wv.is_instance
             if wv.is_instance and wv.instance_template_chunks and num_planes:
                 chunks_x = wv.size_x // 8
-                self._instance_template_chunks = np.array(wv.instance_template_chunks, dtype=np.int32).reshape(num_planes, chunks_x, -1)
+                self._instance_template_chunks = np.array(
+                    wv.instance_template_chunks, dtype=np.int32
+                ).reshape(num_planes, chunks_x, -1)
             else:
                 self._instance_template_chunks = None
         elif field_name == "menu_open_update":
@@ -170,12 +178,14 @@ class ProcessedCache:
                 n = len(proto_obj.options)
                 sub_menus: list[SubMenuSort] = []
                 for sm in proto_obj.sub_menus:
-                    sub_menus.append(SubMenuSort(
-                        parent_index=n - 1 - sm.parent_index,
-                        options=tuple(reversed(sm.options)),
-                        targets=tuple(reversed(sm.targets)),
-                        menu_actions=tuple(reversed(sm.menu_actions)),
-                    ))
+                    sub_menus.append(
+                        SubMenuSort(
+                            parent_index=n - 1 - sm.parent_index,
+                            options=tuple(reversed(sm.options)),
+                            targets=tuple(reversed(sm.targets)),
+                            menu_actions=tuple(reversed(sm.menu_actions)),
+                        )
+                    )
                 self._post_menu_sort = MenuSort(
                     options=tuple(reversed(proto_obj.options)),
                     targets=tuple(reversed(proto_obj.targets)),

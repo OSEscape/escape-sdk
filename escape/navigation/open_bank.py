@@ -75,7 +75,11 @@ class OpenBank:
                 return Status.RUNNING
             dest = path.tile_path[-1]
             self._navigator = Navigator(
-                dest, self._walker, self._pathfinder, self._registry, self._config,
+                dest,
+                self._walker,
+                self._pathfinder,
+                self._registry,
+                self._config,
             )
 
         result = self._navigator.tick()

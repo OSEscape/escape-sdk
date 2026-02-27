@@ -1,5 +1,7 @@
 """Local player monitoring and state tracking."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from escape._math import _chebyshev, _combat_level

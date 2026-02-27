@@ -297,7 +297,9 @@ _CAPES: dict[str, ItemTeleportInfo] = {
     "Achievement diary cape: 3. Sir Rebral": ItemTeleportInfo("3. Sir Rebral"),
     "Achievement diary cape: 4. Thorodin": ItemTeleportInfo("4. Thorodin"),
     "Achievement diary cape: 5. Flax keeper": ItemTeleportInfo("5. Flax keeper"),
-    "Achievement diary cape: 6. Pirate Jackie the Fruit": ItemTeleportInfo("6. Pirate Jackie the Fruit"),
+    "Achievement diary cape: 6. Pirate Jackie the Fruit": ItemTeleportInfo(
+        "6. Pirate Jackie the Fruit"
+    ),
     "Achievement diary cape: 7. Kaleb Paramaya": ItemTeleportInfo("7. Kaleb Paramaya"),
     "Achievement diary cape: 8. Jungle forester": ItemTeleportInfo("8. Jungle forester"),
     "Achievement diary cape: 9. TzHaar-Mej": ItemTeleportInfo("9. TzHaar-Mej"),

@@ -1,5 +1,7 @@
 """Point types for world and screen coordinates."""
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

@@ -1,5 +1,7 @@
 """Geometry types: Shape, Box, Circle, Polygon, Quad."""
 
+from __future__ import annotations
+
 import math
 import random
 from dataclasses import dataclass

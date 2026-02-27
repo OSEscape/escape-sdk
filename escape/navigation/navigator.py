@@ -117,7 +117,9 @@ class Navigator:
                 if next_step.transport is not None:
                     origin = next_step.transport.origin
                     if self._walker._scene.is_tile_on_screen(origin.x, origin.y):
-                        logger.debug("nav: early click — origin ({},{}) on screen", origin.x, origin.y)
+                        logger.debug(
+                            "nav: early click — origin ({},{}) on screen", origin.x, origin.y
+                        )
                         self._early_start = True
                         return self._start_solver(next_step.transport)
 
@@ -141,7 +143,10 @@ class Navigator:
             if step.transport:
                 logger.debug(
                     "  step[{}]: transport '{}' {} → {}",
-                    i, step.transport.name, step.transport.origin, step.transport.destination,
+                    i,
+                    step.transport.name,
+                    step.transport.origin,
+                    step.transport.destination,
                 )
             else:
                 logger.debug("  step[{}]: walk → {}", i, step.target)
@@ -193,7 +198,9 @@ class Navigator:
     def _start_solver(self, transport: Transport) -> Status:
         solver = self._registry.resolve(transport)
         if solver is None:
-            logger.debug("nav: no solver for '{}' (type={})", transport.name, transport.transport_type)
+            logger.debug(
+                "nav: no solver for '{}' (type={})", transport.name, transport.transport_type
+            )
             if self._early_start:
                 self._early_start = False
                 self._early_click_failed = True
@@ -301,7 +308,10 @@ class Navigator:
 
         logger.debug(
             "nav: interacting with obstacle '{}' action='{}' at ({},{})",
-            best.name, action, best.world_x, best.world_y,
+            best.name,
+            action,
+            best.world_x,
+            best.world_y,
         )
         obj = objects.nearest(ids=[best.id], options=[action] if action else None, plane=plane)
         if obj is None:

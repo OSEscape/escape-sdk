@@ -5,6 +5,8 @@ and broadcasts high-level signals via the EventBus. Runs async internally on a
 dedicated daemon thread; all public methods are synchronous.
 """
 
+from __future__ import annotations
+
 import asyncio
 import threading
 from typing import TYPE_CHECKING

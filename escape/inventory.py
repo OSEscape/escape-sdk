@@ -1,5 +1,7 @@
 """Inventory tab module."""
 
+from __future__ import annotations
+
 import time
 
 import escape.timing as timing
@@ -41,7 +43,7 @@ class Inventory(GameTabs, ItemContainer):
             widget = Widget(InterfaceID.Bankside.ITEMS).enable(WidgetFields.get_bounds)
         else:
             widget = Widget(InterfaceID.Inventory.ITEMS).enable(WidgetFields.get_bounds)
-            
+
         children = widget.get_children()
         boxes = []
         for child in children:
@@ -93,7 +95,9 @@ class Inventory(GameTabs, ItemContainer):
         slots = self.slots
         if not (0 <= slot_index < len(slots)):
             return False
-        print(f"Interacting with slot {slot_index} (option={option}, action={action}) with bounds {slots[slot_index]}")
+        print(
+            f"Interacting with slot {slot_index} (option={option}, action={action}) with bounds {slots[slot_index]}"
+        )
         return slots[slot_index].interact(option=option, action=action)
 
     def interact_item(

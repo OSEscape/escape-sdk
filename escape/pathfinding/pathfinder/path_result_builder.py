@@ -37,6 +37,7 @@ def get_edge_transport_info(
     Returns:
         (type_index, csr_index): type is 0=walk, 1+=transport, -1=not found.
             csr_index is -1 if edge not found.
+
     """
     if from_node < 0:
         return 0, -1  # Not a real edge

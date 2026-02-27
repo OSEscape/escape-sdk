@@ -1,5 +1,7 @@
 """Event bus and event definitions for reactive SDK logic."""
 
+from __future__ import annotations
+
 import threading
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, TypeVar

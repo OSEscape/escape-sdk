@@ -1,5 +1,7 @@
 """Human-like mouse movement agent using Linux evdev."""
 
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import math
@@ -652,12 +654,14 @@ class HumanMouseAgent:
             points: list[PathPoint] = []
             for i in range(num_points):
                 t_norm = i / (num_points - 1)
-                points.append(PathPoint(
-                    t=t_norm * duration,
-                    x=start.x + (target.x - start.x) * t_norm,
-                    y=start.y + (target.y - start.y) * t_norm,
-                    progress=t_norm,
-                ))
+                points.append(
+                    PathPoint(
+                        t=t_norm * duration,
+                        x=start.x + (target.x - start.x) * t_norm,
+                        y=start.y + (target.y - start.y) * t_norm,
+                        progress=t_norm,
+                    )
+                )
 
             plan = MovementPlan(points=points, total_duration=duration, end=target)
             await self._execute_plan(plan)
@@ -750,7 +754,9 @@ class HumanMouseAgent:
             movement_start = time.perf_counter()
             replan_count = 0
             max_replans = 50  # Safety limit for extreme cases
-            max_duration = max(total_duration * 3.0, 0.1)  # Emergency timeout, floor at 100ms for overhead
+            max_duration = max(
+                total_duration * 3.0, 0.1
+            )  # Emergency timeout, floor at 100ms for overhead
 
             # Execute path point by point
             i = 0
@@ -866,7 +872,11 @@ class HumanMouseAgent:
         if button == "left":
             self._idle_allowed = True
 
-        if self.idle_enabled and self._idle_allowed and random.random() < self._post_click_probability:
+        if (
+            self.idle_enabled
+            and self._idle_allowed
+            and random.random() < self._post_click_probability
+        ):
             self._post_click_task = asyncio.create_task(self._post_click_movement())
 
         return (pos.x, pos.y)
@@ -1282,9 +1292,7 @@ class HumanMouseAgent:
         if self._loop is None or not self._loop.is_running():
             raise RuntimeError("Agent not started.")
 
-        future = asyncio.run_coroutine_threadsafe(
-            self._teleport_async(x, y), self._loop
-        )
+        future = asyncio.run_coroutine_threadsafe(self._teleport_async(x, y), self._loop)
         future.result(timeout=timeout)
 
     def __enter__(self):

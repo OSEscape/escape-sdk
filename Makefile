@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 
 .PHONY: all server loader proto widgets codegen test format clean build help kill
 
-all: server loader proto widgets codegen resources  ## Build everything
+all: server proto widgets codegen resources  ## Build everything
 
 server:         ## Build Java gRPC server
 	cd server && ./gradlew shadowJar -q

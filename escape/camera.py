@@ -76,7 +76,7 @@ class Camera:
                 logger.debug("camera: reached target")
                 return True
 
-            dx = round(math.degrees(-yaw_diff) * _PX_PER_DEG) if abs(yaw_diff) > tol else 0  
+            dx = round(math.degrees(-yaw_diff) * _PX_PER_DEG) if abs(yaw_diff) > tol else 0
             dy = round(math.degrees(pitch_diff) * _PX_PER_DEG) if abs(pitch_diff) > tol else 0
 
             # Pick start with room for the drag, clamp to available space
@@ -105,7 +105,9 @@ class Camera:
             # Mid-drag correction: re-check while still holding middle
             cam = self._cache.camera
             if cam is not None:
-                new_yaw_diff = self._shortest_diff(target_yaw, cam.yaw) if target_yaw is not None else 0.0
+                new_yaw_diff = (
+                    self._shortest_diff(target_yaw, cam.yaw) if target_yaw is not None else 0.0
+                )
                 new_pitch_diff = (target_pitch - cam.pitch) if target_pitch is not None else 0.0
                 yaw_done = abs(new_yaw_diff) <= tol
                 pitch_done = abs(new_pitch_diff) <= tol
@@ -115,7 +117,9 @@ class Camera:
                     pct_x = new_yaw_diff / yaw_diff if abs(yaw_diff) > tol else 0.0
                     pct_y = new_pitch_diff / pitch_diff if abs(pitch_diff) > tol else 0.0
                     corr_x = dest_x + round(dx * pct_x)
-                    corr_y = dest_y + round(abs(dy * pct_y)) * (1 if dy > 0 else -1 if dy < 0 else 0)
+                    corr_y = dest_y + round(abs(dy * pct_y)) * (
+                        1 if dy > 0 else -1 if dy < 0 else 0
+                    )
                     if bounds is not None:
                         corr_x = max(_EDGE, min(w - _EDGE, corr_x))
                         corr_y = max(_EDGE, min(h - _EDGE, corr_y))

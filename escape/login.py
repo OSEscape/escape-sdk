@@ -18,11 +18,12 @@ from escape.widget import Buttons
 CREDENTIALS_PATH = Path.home() / "alpine" / "credentials" / "credentials.json"
 
 # 20x20 boxes centred on each button
-_EULA_ACCEPT = Box(292, 304, 20, 20)        # login_index 12
-_EXISTING_USER = Box(452, 280, 20, 20)      # login_index 0
-_LOGIN_BUTTON = Box(294, 313, 20, 20)       # login_index 2
-_LAUNCHER_PLAY = Box(370, 255, 20, 20)      # login_index 9, 10
-_OK_BUTTON = Box(358, 285, 20, 20)          # login_index 3, 24
+_EULA_ACCEPT = Box(292, 304, 20, 20)  # login_index 12
+_EXISTING_USER = Box(452, 280, 20, 20)  # login_index 0
+_LOGIN_BUTTON = Box(294, 313, 20, 20)  # login_index 2
+_LAUNCHER_PLAY = Box(370, 255, 20, 20)  # login_index 9, 10
+_OK_BUTTON = Box(358, 285, 20, 20)  # login_index 3, 24
+
 
 def _welcome_open() -> bool:
     s = Services.get()
@@ -44,7 +45,7 @@ def _dismiss_welcome_screen() -> bool:
         logger.info("Clicked Play on welcome screen")
         sleep(0.8, 1.2)
         return True
-    
+
     return False
 
 
@@ -53,7 +54,9 @@ def is_logged_in() -> bool:
     s = Services.get()
     result = s.cache.game_state in ("LOGGED_IN", "LOADING") and not _welcome_open()
     if not result:
-        logger.debug(f"Not logged in (game_state={s.cache.game_state}, welcome_open={_welcome_open()})")
+        logger.debug(
+            f"Not logged in (game_state={s.cache.game_state}, welcome_open={_welcome_open()})"
+        )
     return result
 
 
@@ -137,7 +140,9 @@ def login(timeout: float = 30.0) -> bool:
             # Wrong credentials / disconnected — click OK then terminate
             _OK_BUTTON.interact()
             sleep(0.5)
-            logger.error(f"Login failed (login_index={login_index}): wrong credentials or disconnected")
+            logger.error(
+                f"Login failed (login_index={login_index}): wrong credentials or disconnected"
+            )
             fail_count += 1
             if fail_count >= 3:
                 sys.exit(1)

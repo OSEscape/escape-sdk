@@ -1,5 +1,7 @@
 """Widget types for querying and interacting with game UI elements."""
 
+from __future__ import annotations
+
 import re
 import time
 import typing

@@ -33,9 +33,7 @@ class InteractObject(Action):
     ) -> None:
         super().__init__(name=name)
         if walker._registry is None:
-            raise RuntimeError(
-                "Walker has no solver registry — pass one to Walker() or use Client"
-            )
+            raise RuntimeError("Walker has no solver registry — pass one to Walker() or use Client")
         self._dest = dest
         self._scene = walker._scene
         self._nav = Navigator(

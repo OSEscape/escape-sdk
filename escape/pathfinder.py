@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import threading
 from dataclasses import dataclass, field
 from functools import cached_property
@@ -311,8 +313,16 @@ def _nudge_blocked_goal(
                         best_dist = dist
                         best = (ax, ay, z)
         if best is not None:
-            logger.debug("nudge: goal ({},{},{}) → ({},{},{}) via object '{}'",
-                         x, y, z, best[0], best[1], best[2], obj.name)
+            logger.debug(
+                "nudge: goal ({},{},{}) → ({},{},{}) via object '{}'",
+                x,
+                y,
+                z,
+                best[0],
+                best[1],
+                best[2],
+                obj.name,
+            )
             return best
 
     alt = _find_nearest_walkable(goal, fd, ri, rg)
@@ -404,7 +414,10 @@ class Pathfinder:
         np_pf = pf.numba_pathfinder
         fd, ri, rg = np_pf.grid.flags_data, np_pf.grid.region_index, np_pf._rg
         nbuf = np.empty(8, dtype=np.int64)
-        if _get_valid_neighbors(start_tuple[0], start_tuple[1], start_tuple[2], fd, ri, rg, nbuf) == 0:
+        if (
+            _get_valid_neighbors(start_tuple[0], start_tuple[1], start_tuple[2], fd, ri, rg, nbuf)
+            == 0
+        ):
             alt = _find_nearest_walkable(start_tuple, fd, ri, rg)
             if alt is not None:
                 start_tuple = alt

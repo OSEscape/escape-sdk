@@ -39,11 +39,7 @@ class ResourceObject:
             sx, sy = self.size_y, self.size_x
         else:
             sx, sy = self.size_x, self.size_y
-        return [
-            (self.x + dx, self.y + dy, self.plane)
-            for dx in range(sx)
-            for dy in range(sy)
-        ]
+        return [(self.x + dx, self.y + dy, self.plane) for dx in range(sx) for dy in range(sy)]
 
 
 def query(
@@ -102,7 +98,9 @@ def query(
         params.extend(actions)
 
     where = " AND ".join(where_clauses) if where_clauses else "1=1"
-    actions_join = "JOIN object_action_slots oas ON oas.object_id = o.object_id" if need_actions_join else ""
+    actions_join = (
+        "JOIN object_action_slots oas ON oas.object_id = o.object_id" if need_actions_join else ""
+    )
 
     sql = f"""
         SELECT DISTINCT o.coord, o.object_id, o.size_x, o.size_y, o.orientation, n.name

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import math
 import random
@@ -365,7 +367,9 @@ class Bank(ItemContainer):
         """Return the best bank button for the most common withdrawal quantity."""
         if not self._withdraw_counts:
             return None
-        for category, _ in sorted(self._withdraw_counts.items(), key=lambda kv: kv[1], reverse=True):
+        for category, _ in sorted(
+            self._withdraw_counts.items(), key=lambda kv: kv[1], reverse=True
+        ):
             if category in ("1", "5", "10", "All"):
                 return category
             # Custom X amount — only use X button if value already matches
@@ -429,8 +433,10 @@ class Bank(ItemContainer):
             return True
 
         return timing.wait_until(lambda: self._equipment.get_total_count() < start, timeout=2.0)
-    
-    def hover(self, identifier: ItemIdentifier, quantity: int | None = None, noted: bool | None = None) -> bool:
+
+    def hover(
+        self, identifier: ItemIdentifier, quantity: int | None = None, noted: bool | None = None
+    ) -> bool:
         if not self.is_open():
             return False
 
@@ -448,7 +454,7 @@ class Bank(ItemContainer):
             category = self._quantity_category(quantity)
             self._withdraw_counts[category] = self._withdraw_counts.get(category, 0) + 1
             self._ensure_optimal_quantity()
-      
+
         return area.hover("Withdraw-1 ")
 
     def withdraw(self, identifier: ItemIdentifier, quantity: int = 1, noted: bool = False) -> bool:
@@ -533,7 +539,12 @@ class Bank(ItemContainer):
             return False
 
         inv = self._inventory
-        keep_ids = {inv.items[s].id for ident in identifiers for s in inv.find_slots(ident) if inv.items[s] is not None}
+        keep_ids = {
+            inv.items[s].id
+            for ident in identifiers
+            for s in inv.find_slots(ident)
+            if inv.items[s] is not None
+        }
         deposited: set[int] = set()
         for item in self._inventory.items:
             if item is None or item.id in keep_ids or item.id in deposited:
@@ -570,7 +581,9 @@ class Bank(ItemContainer):
             text_data = children[i + 1].get("text", "")
 
             if bounds_data.get("width", 0) > 0 and text_data:
-                box = Box(bounds_data["x"], bounds_data["y"], bounds_data["width"], bounds_data["height"])
+                box = Box(
+                    bounds_data["x"], bounds_data["y"], bounds_data["width"], bounds_data["height"]
+                )
                 mapping[text_data.strip()] = box
 
         return mapping

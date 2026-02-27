@@ -1,18 +1,17 @@
 import numpy as np
 
-
 # ---- RuneLite-style collision bits (your snippet) ----
 NW = 0x1
-N  = 0x2
+N = 0x2
 NE = 0x4
-E  = 0x8
+E = 0x8
 SE = 0x10
-S  = 0x20
+S = 0x20
 SW = 0x40
-W  = 0x80
+W = 0x80
 
-OBJ   = 0x100
-FDEC  = 0x40000
+OBJ = 0x100
+FDEC = 0x40000
 FLOOR = 0x200000
 
 # You said: anything like floor/full/object => not walkable from all sides
@@ -20,12 +19,12 @@ FULL_MASK = OBJ | FDEC | FLOOR
 
 # 8 directions in OSRS BFS expansion order: W, E, S, N, SW, SE, NW, NE
 DX8 = np.array([-1, 1, 0, 0, -1, 1, -1, 1], dtype=np.int32)
-DY8 = np.array([ 0, 0,-1, 1, -1,-1,  1, 1], dtype=np.int32)
+DY8 = np.array([0, 0, -1, 1, -1, -1, 1, 1], dtype=np.int32)
 
 # "from tile blocks leaving in this dir"
 FROM_BIT8 = np.array([W, E, S, N, SW, SE, NW, NE], dtype=np.int32)
 # "to tile blocks entering from opposite side"
-TO_BIT8   = np.array([E, W, N, S, NE, NW, SE, SW], dtype=np.int32)
+TO_BIT8 = np.array([E, W, N, S, NE, NW, SE, SW], dtype=np.int32)
 
 # Cardinal dir indices inside the 8-dir arrays
 DIR_W = 0
@@ -35,8 +34,10 @@ DIR_N = 3
 
 try:
     from escape.pathfinding._native import (
-        bfs_to_tile,
         bfs_to_object,
+        bfs_to_tile,
+    )
+    from escape.pathfinding._native import (
         can_step_osrs as _can_step_osrs,
     )
 except ImportError:
@@ -71,11 +72,10 @@ except ImportError:
 
     @njit(cache=True)
     def _can_step_osrs(flags: np.ndarray, w: int, h: int, x: int, y: int, di: int) -> bool:
-        """
-        OSRS-style 8-way step legality:
-          - destination must be walkable
-          - directional bits must allow crossing (both sides)
-          - diagonal step requires both adjacent cardinal steps legal too
+        """OSRS-style 8-way step legality:
+        - destination must be walkable
+        - directional bits must allow crossing (both sides)
+        - diagonal step requires both adjacent cardinal steps legal too
         """
         if not _can_step_cardinal(flags, w, h, x, y, di):
             return False
@@ -121,8 +121,7 @@ except ImportError:
 
     @njit(cache=True)
     def bfs_to_tile(flags: np.ndarray, sx: int, sy: int, gx: int, gy: int):
-        """
-        BFS shortest path using OSRS step rules.
+        """BFS shortest path using OSRS step rules.
         flags: np.int32[h,w]
         Returns (px, py, n). If no path: n=0 and px/py empty.
         """
@@ -187,8 +186,7 @@ except ImportError:
 
     @njit(cache=True)
     def _edge_open_for_approach(flags: np.ndarray, sx: int, sy: int, bx: int, by: int) -> bool:
-        """
-        Boundary check between stand tile (sx,sy) and border tile (bx,by).
+        """Boundary check between stand tile (sx,sy) and border tile (bx,by).
         Supports cardinal and diagonal adjacency. Does NOT require border tile walkable.
         """
         dx = bx - sx
@@ -224,9 +222,10 @@ except ImportError:
         return True
 
     @njit(cache=True)
-    def _is_object_goal(flags: np.ndarray, x: int, y: int, rx0: int, ry0: int, rx1: int, ry1: int, w: int, h: int) -> bool:
-        """
-        Goal: stand on a walkable tile adjacent to the object footprint, and the boundary
+    def _is_object_goal(
+        flags: np.ndarray, x: int, y: int, rx0: int, ry0: int, rx1: int, ry1: int, w: int, h: int
+    ) -> bool:
+        """Goal: stand on a walkable tile adjacent to the object footprint, and the boundary
         edge between stand tile and footprint tile is open (both-side bit check).
         """
         if _rect_contains(x, y, rx0, ry0, rx1, ry1):
@@ -253,8 +252,7 @@ except ImportError:
         size_x: int,
         size_y: int,
     ):
-        """
-        Object root is SW tile. size is given (already oriented).
+        """Object root is SW tile. size is given (already oriented).
         Finds path to a stand tile adjacent to the footprint with correct boundary access.
 
         Returns (px, py, n). If no path: n=0.

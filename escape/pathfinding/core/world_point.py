@@ -97,9 +97,7 @@ except ImportError:
         return pack_world_point(x + dx, y + dy, plane)
 
     @njit(cache=True)
-    def distance_between_2d_coords(
-        x1: int, y1: int, x2: int, y2: int, diagonal: int = 1
-    ) -> int:
+    def distance_between_2d_coords(x1: int, y1: int, x2: int, y2: int, diagonal: int = 1) -> int:
         """Compute 2D distance between two coordinate pairs.
 
         Uses Chebyshev (diagonal=1) or Manhattan (diagonal=2) metric.

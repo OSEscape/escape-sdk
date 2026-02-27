@@ -4,6 +4,8 @@ A Python SDK for Old School RuneScape bot development with an intuitive
 structure that mirrors the game's interface.
 """
 
+from __future__ import annotations
+
 import importlib
 import sys
 from pathlib import Path as _Path

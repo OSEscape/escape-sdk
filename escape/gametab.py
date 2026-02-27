@@ -4,9 +4,9 @@ from enum import Enum
 from typing import ClassVar
 
 import escape.timing as timing
+from escape._resources import varps
 from escape.constants import InterfaceID, VarbitID
 from escape.widget import Buttons
-from escape._resources import varps
 
 
 class GameTab(Enum):
@@ -24,6 +24,7 @@ class GameTab(Enum):
     SETTINGS = 11
     EMOTES = 12
     MUSIC = 13
+
 
 _FKEY_VARBITS = [
     VarbitID.STONE_COMBAT_KEY,
@@ -141,7 +142,6 @@ class GameTabs:
 
         if self.TAB_TYPE is None:
             raise NotImplementedError("Subclass must set TAB_TYPE")
-        
 
         key = varps.get_varbit(_FKEY_VARBITS[self.TAB_TYPE.value])
         if use_fkeys and key:
@@ -156,7 +156,8 @@ class GameTabs:
                 box.interact()
                 return timing.wait_until(self.is_open, timeout=0.1, poll_interval=0.001)
         return False
-    
+
+
 def _map_key(key: int) -> str:
     if key <= 12:
         return f"F{key}"

@@ -49,7 +49,12 @@ class Click:
                 if self._attempts >= self._max_attempts:
                     logger.debug("{}: click failed after {} attempts", self._name, self._attempts)
                     return Status.FAILURE
-                logger.debug("{}: click missed, retrying ({}/{})", self._name, self._attempts, self._max_attempts)
+                logger.debug(
+                    "{}: click missed, retrying ({}/{})",
+                    self._name,
+                    self._attempts,
+                    self._max_attempts,
+                )
                 return Status.RUNNING
             self._clicked = True
             self._click_tick = self._game_tick()
@@ -61,9 +66,20 @@ class Click:
             elapsed = current - self._click_tick
             if elapsed > self._timeout_ticks:
                 if self._attempts >= self._max_attempts:
-                    logger.debug("{}: timed out after {} game ticks ({} attempts exhausted)", self._name, elapsed, self._attempts)
+                    logger.debug(
+                        "{}: timed out after {} game ticks ({} attempts exhausted)",
+                        self._name,
+                        elapsed,
+                        self._attempts,
+                    )
                     return Status.FAILURE
-                logger.debug("{}: timed out after {} game ticks, re-clicking ({}/{})", self._name, elapsed, self._attempts, self._max_attempts)
+                logger.debug(
+                    "{}: timed out after {} game ticks, re-clicking ({}/{})",
+                    self._name,
+                    elapsed,
+                    self._attempts,
+                    self._max_attempts,
+                )
                 self._clicked = False
                 self._click_tick = None
                 return Status.RUNNING

@@ -32,7 +32,11 @@ _BYTES_PER_REGION = _TILES_PER_REGION // 8
 try:
     from escape.pathfinding._native import (
         bfs_find_any_target as _bfs_find_any_target_native,
+    )
+    from escape.pathfinding._native import (
         bfs_find_k_targets as _bfs_find_k_targets_native,
+    )
+    from escape.pathfinding._native import (
         bfs_pathfind as _bfs_pathfind_native,
     )
 

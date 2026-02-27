@@ -20,7 +20,7 @@ def _extract_code(name: str) -> str | None:
     """
     prefix = "Fairy ring "
     if name.startswith(prefix):
-        return name[len(prefix):].replace(" ", "")
+        return name[len(prefix) :].replace(" ", "")
     code = name.replace(" ", "")
     if len(code) == 3 and code.isalpha():
         return code

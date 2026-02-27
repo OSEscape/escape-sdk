@@ -72,14 +72,20 @@ class TransportClickSolver:
 
         cache = Services.get().cache
         pos = cache.world_position
-        near = pos is not None and transport.destination.is_nearby(Point(*pos), self._arrival_threshold)
+        near = pos is not None and transport.destination.is_nearby(
+            Point(*pos), self._arrival_threshold
+        )
         logger.debug(
             "solver | pos={} dest={} near={}",
-            pos, transport.destination, near,
+            pos,
+            transport.destination,
+            near,
         )
         return near
 
-    def _parse_object_metadata(self, transport: Transport) -> tuple[str | None, str | None, int | None]:
+    def _parse_object_metadata(
+        self, transport: Transport
+    ) -> tuple[str | None, str | None, int | None]:
         """Extract object interaction metadata from the transport."""
         if not transport.metadata:
             full_name = transport.name
@@ -103,9 +109,10 @@ class TransportClickSolver:
 
     def _calculate_arrival_threshold(self, transport: Transport) -> int:
         """Calculate a reasonable arrival threshold based on transport metadata."""
-        _distance = transport.origin.distance_to(transport.destination) + abs(
-            transport.destination.plane - transport.origin.plane
-        ) * 1000
+        _distance = (
+            transport.origin.distance_to(transport.destination)
+            + abs(transport.destination.plane - transport.origin.plane) * 1000
+        )
         return max(1, int(_distance * 0.25))
 
 

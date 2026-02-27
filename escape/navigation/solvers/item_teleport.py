@@ -45,7 +45,8 @@ class ItemTeleportSolver:
                     if equipment.find_slot(item_id) is not None:
                         logger.debug(
                             "item-solver: using equipped item {} option='{}'",
-                            item_id, info.option,
+                            item_id,
+                            info.option,
                         )
                         return equipment.interact_item(item_id, option=info.option)
 
@@ -55,7 +56,8 @@ class ItemTeleportSolver:
                     if inventory.find_slot(item_id) is not None:
                         logger.debug(
                             "item-solver: using inventory item {} option='{}'",
-                            item_id, info.option,
+                            item_id,
+                            info.option,
                         )
                         return inventory.interact_item(item_id, option=info.option)
 

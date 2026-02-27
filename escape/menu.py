@@ -1,5 +1,7 @@
 """Menu module - handles right-click context menu interactions."""
 
+from __future__ import annotations
+
 import random
 import time
 from typing import TYPE_CHECKING
@@ -54,13 +56,15 @@ class Menu:
     def wait_has_menu_action(self, menu_action: str, ticks: int = 2) -> bool:
         """Wait up to *ticks* game ticks for a menu action to appear."""
         return timing.wait_until_ticks(
-            lambda: self.has_menu_action(menu_action), ticks=ticks,
+            lambda: self.has_menu_action(menu_action),
+            ticks=ticks,
         )
 
     def wait_has_option(self, option: str, ticks: int = 2) -> bool:
         """Wait up to *ticks* game ticks for a menu option to appear."""
         return timing.wait_until_ticks(
-            lambda: self.has_option(option), ticks=ticks,
+            lambda: self.has_option(option),
+            ticks=ticks,
         )
 
     def open(self, timeout: float = 0.5) -> bool:
@@ -313,7 +317,10 @@ class Menu:
         sm = self.get_sub_menu()
         if sm is None:
             return []
-        return [f"{option} {target}".strip() for option, target in zip(sm.options, sm.targets, strict=False)]
+        return [
+            f"{option} {target}".strip()
+            for option, target in zip(sm.options, sm.targets, strict=False)
+        ]
 
     def _find_in_sub_menu(self, option_text: str) -> tuple[int, int] | None:
         """Find option in submenu. Returns (parent_index, sub_option_index) or None."""
@@ -334,7 +341,9 @@ class Menu:
         option_y = state.sub_menu_y + 19 + (sub_option_index * 15)
         return Box(option_x, option_y, state.sub_menu_width - 5, 14)
 
-    def _click_sub_menu_option(self, parent_index: int, sub_option_index: int, option_text: str) -> bool:
+    def _click_sub_menu_option(
+        self, parent_index: int, sub_option_index: int, option_text: str
+    ) -> bool:
         if not self.is_open():
             if not self.open():
                 return False

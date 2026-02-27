@@ -27,9 +27,7 @@ class NavigateTo(Action):
     ) -> None:
         super().__init__(name=name)
         if walker._registry is None:
-            raise RuntimeError(
-                "Walker has no solver registry — pass one to Walker() or use Client"
-            )
+            raise RuntimeError("Walker has no solver registry — pass one to Walker() or use Client")
         self._nav = Navigator(
             dest,
             walker,

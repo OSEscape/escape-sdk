@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, replace
 
 from escape._math import _chebyshev
@@ -40,7 +42,12 @@ class SceneObject:
 
         logger.debug(
             "interact: picked id={} name='{}' pos=({},{}) dist={} actions={}",
-            self.id, self.name, self.world_x, self.world_y, self.distance, self.actions,
+            self.id,
+            self.name,
+            self.world_x,
+            self.world_y,
+            self.distance,
+            self.actions,
         )
         tracker = Services.get().tracker
         tracker.track_object(self.packed_location, self.id)
@@ -75,8 +82,11 @@ class SceneObject:
     @property
     def tiles(self) -> list[tuple[int, int, int]]:
         """All tiles occupied by this object. Sizes are pre-adjusted by Java."""
-        return [(self.sw_x + dx, self.sw_y + dy, self.plane)
-                for dx in range(self.size_x) for dy in range(self.size_y)]
+        return [
+            (self.sw_x + dx, self.sw_y + dy, self.plane)
+            for dx in range(self.size_x)
+            for dy in range(self.size_y)
+        ]
 
     @property
     def position(self) -> tuple[int, int, int]:
@@ -149,7 +159,9 @@ class Objects:
         options: list[str] | None = None,
         plane: int | None = None,
     ) -> SceneObject | None:
-        results = self.get(ids=ids, names=names, max_distance=max_distance, option=options, plane=plane)
+        results = self.get(
+            ids=ids, names=names, max_distance=max_distance, option=options, plane=plane
+        )
         if not results:
             return None
         return min(results, key=lambda o: o.distance)

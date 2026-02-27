@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -43,9 +45,7 @@ class Walker:
         from escape.navigation.navigator import Navigator
 
         if self._registry is None:
-            raise RuntimeError(
-                "Walker has no solver registry — pass one to Walker() or use Client"
-            )
+            raise RuntimeError("Walker has no solver registry — pass one to Walker() or use Client")
         return Navigator(dest, self, self._pathfinder, self._registry, config, arrival_threshold)
 
     def open_bank(self, config: PathfinderConfig | None = None) -> OpenBank:
@@ -53,9 +53,7 @@ class Walker:
         from escape.navigation.open_bank import OpenBank
 
         if self._registry is None:
-            raise RuntimeError(
-                "Walker has no solver registry — pass one to Walker() or use Client"
-            )
+            raise RuntimeError("Walker has no solver registry — pass one to Walker() or use Client")
         return OpenBank(self, self._pathfinder, self._registry, config)
 
     def _distance_to_target(self) -> int | None:
@@ -198,7 +196,9 @@ class Walker:
             path, visible_indices, player_x, player_y, max_index, grid=grid
         )
         if target_idx is None:
-            logger.debug("walk: no suitable tile (visible={} max_idx={})", len(visible_indices), max_index)
+            logger.debug(
+                "walk: no suitable tile (visible={} max_idx={})", len(visible_indices), max_index
+            )
             return False
 
         wx, wy = int(path.world_x[target_idx]), int(path.world_y[target_idx])

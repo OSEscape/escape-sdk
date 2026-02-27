@@ -1,5 +1,7 @@
 """Projection utilities for converting local coordinates to screen coordinates."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -304,7 +306,11 @@ class Projection:
         camera_ver = cache.camera_version
         scene_ver = cache.world_view_version
 
-        if self._tile_grid is not None and camera_ver == self._camera_version and scene_ver == self._scene_version:
+        if (
+            self._tile_grid is not None
+            and camera_ver == self._camera_version
+            and scene_ver == self._scene_version
+        ):
             return self._tile_grid
 
         if not self._refresh_camera():
@@ -430,7 +436,9 @@ class Projection:
             bridge_flags = np.zeros((wv.size_x, wv.size_y), dtype=bool)
 
         # size_x/size_y in proto are vertex counts (105); tile count is one less (104)
-        self.set_scene(tile_heights, bridge_flags, wv.base_x, wv.base_y, wv.size_x - 1, wv.size_y - 1)
+        self.set_scene(
+            tile_heights, bridge_flags, wv.base_x, wv.base_y, wv.size_x - 1, wv.size_y - 1
+        )
         self._scene_version = self._cache.world_view_version
         return True
 

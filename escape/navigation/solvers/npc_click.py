@@ -60,7 +60,9 @@ class NpcClickSolver:
                 timeout_ticks=3 + duration,
                 name=f"npc-click-{transport.name}",
             )
-            logger.debug("npc-solver: threshold={} for '{}'", self._arrival_threshold, transport.name)
+            logger.debug(
+                "npc-solver: threshold={} for '{}'", self._arrival_threshold, transport.name
+            )
 
         return self._clicker.tick()
 
@@ -96,16 +98,21 @@ class NpcClickSolver:
 
         cache = Services.get().cache
         pos = cache.world_position
-        near = pos is not None and transport.destination.is_nearby(Point(*pos), self._arrival_threshold)
+        near = pos is not None and transport.destination.is_nearby(
+            Point(*pos), self._arrival_threshold
+        )
         logger.debug(
             "npc-solver | pos={} dest={} near={}",
-            pos, transport.destination, near,
+            pos,
+            transport.destination,
+            near,
         )
         return near
 
     def _calculate_arrival_threshold(self, transport: Transport) -> int:
         """Calculate a reasonable arrival threshold based on transport metadata."""
-        _distance = transport.origin.distance_to(transport.destination) + abs(
-            transport.destination.plane - transport.origin.plane
-        ) * 1000
+        _distance = (
+            transport.origin.distance_to(transport.destination)
+            + abs(transport.destination.plane - transport.origin.plane) * 1000
+        )
         return max(1, int(_distance * 0.25))

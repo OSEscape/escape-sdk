@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from escape._logger import logger
 from time import sleep
 from typing import TYPE_CHECKING
+
+from escape._logger import logger
 
 if TYPE_CHECKING:
     from escape.point import ScreenPoint
