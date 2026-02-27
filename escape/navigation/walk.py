@@ -117,7 +117,7 @@ class Walk:
         if wv is None:
             return tiles
 
-        flags = collision[plane].T  # [y, x] for osrs_pathfinder
+        flags = collision[plane].T.copy()  # [y, x] for osrs_pathfinder, .copy() for C-contiguity
         h, w = flags.shape
         base_x = wv.base_x
         base_y = wv.base_y

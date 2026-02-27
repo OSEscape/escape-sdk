@@ -235,54 +235,6 @@ class GraphPathfinder:
 
         return load_graph_pathfinder(output_dir)
 
-    def _warmup_jit(self) -> None:
-        """Warmup JIT-compiled functions with a dummy query."""
-        if len(self.graph_node_ids) > 0:
-            node_id = self.graph_node_ids[0]
-            x, y, z = (
-                int(self.node_x[node_id]),
-                int(self.node_y[node_id]),
-                int(self.node_plane[node_id]),
-            )
-
-            plane_graph_packed = self._plane_graph_packed.get(z)
-            if plane_graph_packed is not None and len(plane_graph_packed) > 0:
-                self.numba_pathfinder.find_nearest_target(
-                    x, y, z, plane_graph_packed, max_iterations=100
-                )
-
-            empty_i32 = np.array([], dtype=np.int32)
-            _dijkstra_csr(
-                node_id,
-                node_id,
-                self.edge_offsets,
-                self.edge_targets,
-                self.edge_weights,
-                self.spawn_node_ids[:1],
-                self.spawn_costs[:1].astype(np.int32),
-                0,
-                self._empty_blocked,
-                empty_i32,
-                empty_i32,
-                empty_i32,
-                self._empty_blocked,
-                10,
-            )
-            _dijkstra_csr_multi_target(
-                node_id,
-                self.bank_node_ids[:1]
-                if len(self.bank_node_ids) > 0
-                else np.array([node_id], dtype=np.int32),
-                self.edge_offsets,
-                self.edge_targets,
-                self.edge_weights,
-                self.spawn_node_ids[:1],
-                self.spawn_costs[:1].astype(np.int32),
-                0,
-                self._empty_blocked,
-                10,
-            )
-
     def find_path(
         self,
         start: tuple[int, int, int],

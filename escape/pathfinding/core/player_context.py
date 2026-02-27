@@ -224,3 +224,6 @@ class PlayerContext:
     def has_any_item(self, item_ids: list[int], check_bank: bool = False) -> bool:
         """Check if player has any of the specified items."""
         return any(self.has_item(item_id, 1, check_bank) for item_id in item_ids)
+
+
+DEFAULT_CONTEXT = PlayerContext()

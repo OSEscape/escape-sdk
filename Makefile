@@ -1,11 +1,14 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: all server proto widgets codegen test format clean build help kill
+.PHONY: all server loader proto widgets codegen test format clean build help kill
 
-all: server proto widgets codegen resources  ## Build everything
+all: server loader proto widgets codegen resources  ## Build everything
 
 server:         ## Build Java gRPC server
 	cd server && ./gradlew shadowJar -q
+
+loader:         ## Build C loader
+	$(MAKE) -C loader
 
 proto:          ## Generate proto stubs (Python)
 	buf generate
@@ -32,6 +35,7 @@ clean:          ## Remove caches and build artifacts
 	rm -rf server/bin/
 	rm -rf escape/_proto/
 	rm -f escape/constants/*.py escape/constants/.version
+	$(MAKE) -C loader clean
 	rm -rf .venv
 
 kill:           ## Kill RuneLite and clean up socket

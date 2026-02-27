@@ -183,8 +183,4 @@ def load_graph_pathfinder(output_dir: str | Path) -> GraphPathfinder:
         numba_pathfinder=numba_pathfinder,
     )
 
-    # Warmup JIT-compiled functions to avoid first-query latency
-    logger.info("Warming up JIT...")
-    instance._warmup_jit()
-
     return instance

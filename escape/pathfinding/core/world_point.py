@@ -5,8 +5,6 @@ from __future__ import annotations
 import sys
 from typing import NamedTuple
 
-from numba import njit
-
 # Constants
 UNDEFINED: int = -1
 """Sentinel value indicating an undefined/invalid packed world point."""
@@ -41,151 +39,144 @@ class WorldArea(NamedTuple):
 
 
 # =============================================================================
-# Core Packing/Unpacking Functions (Numba JIT compiled)
+# Core Functions — Rust native or Numba JIT fallback
 # =============================================================================
 
+try:
+    from escape.pathfinding._native import (
+        distance_between,
+        distance_between_2d,
+        distance_between_2d_coords,
+        distance_between_coords,
+        distance_to_area,
+        distance_to_area_2d,
+        dxdy,
+        pack_world_point,
+        unpack_world_plane,
+        unpack_world_point,
+        unpack_world_x,
+        unpack_world_y,
+    )
+except ImportError:
+    from numba import njit
 
-@njit(cache=True)
-def pack_world_point(x: int, y: int, plane: int) -> int:
-    """Pack x, y, plane coordinates into a single 32-bit integer."""
-    return (x & 0x7FFF) | ((y & 0x7FFF) << 15) | ((plane & 0x3) << 30)
+    @njit(cache=True)
+    def pack_world_point(x: int, y: int, plane: int) -> int:
+        """Pack x, y, plane coordinates into a single 32-bit integer."""
+        return (x & 0x7FFF) | ((y & 0x7FFF) << 15) | ((plane & 0x3) << 30)
 
+    @njit(cache=True)
+    def unpack_world_x(packed: int) -> int:
+        """Extract the x coordinate from a packed world point."""
+        return packed & 0x7FFF
 
-@njit(cache=True)
-def unpack_world_x(packed: int) -> int:
-    """Extract the x coordinate from a packed world point."""
-    return packed & 0x7FFF
+    @njit(cache=True)
+    def unpack_world_y(packed: int) -> int:
+        """Extract the y coordinate from a packed world point."""
+        return (packed >> 15) & 0x7FFF
 
+    @njit(cache=True)
+    def unpack_world_plane(packed: int) -> int:
+        """Extract the plane from a packed world point."""
+        return (packed >> 30) & 0x3
 
-@njit(cache=True)
-def unpack_world_y(packed: int) -> int:
-    """Extract the y coordinate from a packed world point."""
-    return (packed >> 15) & 0x7FFF
+    @njit(cache=True)
+    def unpack_world_point(packed: int) -> tuple[int, int, int]:
+        """Unpack a packed world point into (x, y, plane) tuple."""
+        x = packed & 0x7FFF
+        y = (packed >> 15) & 0x7FFF
+        plane = (packed >> 30) & 0x3
+        return (x, y, plane)
 
+    @njit(cache=True)
+    def dxdy(packed: int, dx: int, dy: int) -> int:
+        """Offset a packed world point by (dx, dy) on the same plane."""
+        x = packed & 0x7FFF
+        y = (packed >> 15) & 0x7FFF
+        plane = (packed >> 30) & 0x3
+        return pack_world_point(x + dx, y + dy, plane)
 
-@njit(cache=True)
-def unpack_world_plane(packed: int) -> int:
-    """Extract the plane from a packed world point."""
-    return (packed >> 30) & 0x3
+    @njit(cache=True)
+    def distance_between_2d_coords(
+        x1: int, y1: int, x2: int, y2: int, diagonal: int = 1
+    ) -> int:
+        """Compute 2D distance between two coordinate pairs.
 
+        Uses Chebyshev (diagonal=1) or Manhattan (diagonal=2) metric.
+        """
+        dx = abs(x1 - x2)
+        dy = abs(y1 - y2)
 
-@njit(cache=True)
-def unpack_world_point(packed: int) -> tuple[int, int, int]:
-    """Unpack a packed world point into (x, y, plane) tuple."""
-    x = packed & 0x7FFF
-    y = (packed >> 15) & 0x7FFF
-    plane = (packed >> 30) & 0x3
-    return (x, y, plane)
+        if diagonal == 1:
+            return max(dx, dy)
+        elif diagonal == 2:
+            return dx + dy
 
+        return 2147483647
 
-# =============================================================================
-# Coordinate Manipulation
-# =============================================================================
+    @njit(cache=True)
+    def distance_between_coords(
+        x1: int, y1: int, plane1: int, x2: int, y2: int, plane2: int, diagonal: int = 1
+    ) -> int:
+        """Compute distance between two 3D coordinate sets, or MAX_DISTANCE if planes differ."""
+        if plane1 != plane2:
+            return 2147483647
+        return distance_between_2d_coords(x1, y1, x2, y2, diagonal)
 
+    @njit(cache=True)
+    def distance_between(packed1: int, packed2: int, diagonal: int = 1) -> int:
+        """Compute distance between two packed world points, or MAX_DISTANCE if planes differ."""
+        x1 = packed1 & 0x7FFF
+        y1 = (packed1 >> 15) & 0x7FFF
+        plane1 = (packed1 >> 30) & 0x3
 
-@njit(cache=True)
-def dxdy(packed: int, dx: int, dy: int) -> int:
-    """Offset a packed world point by (dx, dy) on the same plane."""
-    x = packed & 0x7FFF
-    y = (packed >> 15) & 0x7FFF
-    plane = (packed >> 30) & 0x3
-    return pack_world_point(x + dx, y + dy, plane)
+        x2 = packed2 & 0x7FFF
+        y2 = (packed2 >> 15) & 0x7FFF
+        plane2 = (packed2 >> 30) & 0x3
 
+        return distance_between_coords(x1, y1, plane1, x2, y2, plane2, diagonal)
 
-# =============================================================================
-# Distance Functions (Numba JIT compiled)
-# =============================================================================
+    @njit(cache=True)
+    def distance_between_2d(packed1: int, packed2: int, diagonal: int = 1) -> int:
+        """Compute 2D distance between two packed world points (ignoring plane)."""
+        x1 = packed1 & 0x7FFF
+        y1 = (packed1 >> 15) & 0x7FFF
 
+        x2 = packed2 & 0x7FFF
+        y2 = (packed2 >> 15) & 0x7FFF
 
-@njit(cache=True)
-def distance_between_2d_coords(x1: int, y1: int, x2: int, y2: int, diagonal: int = 1) -> int:
-    """Compute 2D distance between two coordinate pairs.
+        return distance_between_2d_coords(x1, y1, x2, y2, diagonal)
 
-    Uses Chebyshev (diagonal=1) or Manhattan (diagonal=2) metric.
-    """
-    dx = abs(x1 - x2)
-    dy = abs(y1 - y2)
+    @njit(cache=True)
+    def distance_to_area_2d(
+        packed: int, area_x: int, area_y: int, area_width: int, area_height: int
+    ) -> int:
+        """Compute 2D Chebyshev distance from a packed point to a rectangular area (0 if inside)."""
+        x = packed & 0x7FFF
+        y = (packed >> 15) & 0x7FFF
 
-    if diagonal == 1:
-        # Chebyshev distance (diagonal movement costs 1)
+        area_max_x = area_x + area_width - 1
+        area_max_y = area_y + area_height - 1
+
+        dx = max(max(area_x - x, 0), x - area_max_x)
+        dy = max(max(area_y - y, 0), y - area_max_y)
+
         return max(dx, dy)
-    elif diagonal == 2:
-        # Manhattan distance (no diagonal movement)
-        return dx + dy
 
-    # Unsupported metric - return max value
-    # Note: In Numba, we can't use sys.maxsize directly, use a large constant
-    return 2147483647  # Java Integer.MAX_VALUE
-
-
-@njit(cache=True)
-def distance_between_coords(
-    x1: int, y1: int, plane1: int, x2: int, y2: int, plane2: int, diagonal: int = 1
-) -> int:
-    """Compute distance between two 3D coordinate sets, or MAX_DISTANCE if planes differ."""
-    if plane1 != plane2:
-        return 2147483647
-    return distance_between_2d_coords(x1, y1, x2, y2, diagonal)
-
-
-@njit(cache=True)
-def distance_between(packed1: int, packed2: int, diagonal: int = 1) -> int:
-    """Compute distance between two packed world points, or MAX_DISTANCE if planes differ."""
-    x1 = packed1 & 0x7FFF
-    y1 = (packed1 >> 15) & 0x7FFF
-    plane1 = (packed1 >> 30) & 0x3
-
-    x2 = packed2 & 0x7FFF
-    y2 = (packed2 >> 15) & 0x7FFF
-    plane2 = (packed2 >> 30) & 0x3
-
-    return distance_between_coords(x1, y1, plane1, x2, y2, plane2, diagonal)
-
-
-@njit(cache=True)
-def distance_between_2d(packed1: int, packed2: int, diagonal: int = 1) -> int:
-    """Compute 2D distance between two packed world points (ignoring plane)."""
-    x1 = packed1 & 0x7FFF
-    y1 = (packed1 >> 15) & 0x7FFF
-
-    x2 = packed2 & 0x7FFF
-    y2 = (packed2 >> 15) & 0x7FFF
-
-    return distance_between_2d_coords(x1, y1, x2, y2, diagonal)
-
-
-# =============================================================================
-# Area Distance Functions
-# =============================================================================
-
-
-@njit(cache=True)
-def distance_to_area_2d(
-    packed: int, area_x: int, area_y: int, area_width: int, area_height: int
-) -> int:
-    """Compute 2D Chebyshev distance from a packed point to a rectangular area (0 if inside)."""
-    x = packed & 0x7FFF
-    y = (packed >> 15) & 0x7FFF
-
-    area_max_x = area_x + area_width - 1
-    area_max_y = area_y + area_height - 1
-
-    # Distance to area bounds
-    dx = max(max(area_x - x, 0), x - area_max_x)
-    dy = max(max(area_y - y, 0), y - area_max_y)
-
-    return max(dx, dy)
-
-
-@njit(cache=True)
-def distance_to_area(
-    packed: int, area_x: int, area_y: int, area_width: int, area_height: int, area_plane: int
-) -> int:
-    """Compute Chebyshev distance from a packed point to a rectangular area, or MAX_DISTANCE if planes differ."""
-    plane = (packed >> 30) & 0x3
-    if plane != area_plane:
-        return 2147483647
-    return distance_to_area_2d(packed, area_x, area_y, area_width, area_height)
+    @njit(cache=True)
+    def distance_to_area(
+        packed: int,
+        area_x: int,
+        area_y: int,
+        area_width: int,
+        area_height: int,
+        area_plane: int,
+    ) -> int:
+        """Compute Chebyshev distance from a packed point to a rectangular area, or MAX_DISTANCE if planes differ."""
+        plane = (packed >> 30) & 0x3
+        if plane != area_plane:
+            return 2147483647
+        return distance_to_area_2d(packed, area_x, area_y, area_width, area_height)
 
 
 # =============================================================================

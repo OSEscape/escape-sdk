@@ -4,10 +4,10 @@ gRPC bridge between Python SDK and RuneLite. Linux only.
 
 ## Quick Start
 
-Requires: Java 17+, buf, uv
+Requires: Java 17+, GCC, buf, uv
 
 ```bash
-make all
+make all && cd loader && make run
 ```
 
 ## Development

@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+!escape/pathfinding/_native*.pyd
 *.pyi
 *.egg-info/
 .venv/
@@ -25,6 +26,9 @@ server/build/
 server/.gradle/
 *.jar
 !server/gradle/wrapper/gradle-wrapper.jar
+
+# Loader
+loader/*.so
 
 # IDE
 .idea/
