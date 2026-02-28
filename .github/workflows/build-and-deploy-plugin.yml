@@ -1,0 +1,91 @@
+name: Build and Deploy Plugin
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - 'proto/**'
+      - '.github/workflows/build-and-deploy-plugin.yml'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force rebuild and upload'
+        required: false
+        default: 'false'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temuml
+          java-version: '11'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('server/build.gradle.kts', 'server/settings.gradle.kts') }}
+          restore-keys: |
+            gradle-
+
+      - name: Build shadow JAR
+        working-directory: server
+        run: |
+          chmod +x gradlew
+          ./gradlew shadowJar
+
+      - name: Verify build output
+        run: |
+          ls -lh server/build/libs/bridge-server.jar
+          echo "Build size: $(stat -c%s server/build/libs/bridge-server.jar) bytes"
+
+      - name: Generate build metadata
+        run: |
+          cat > metadata.json << EOF
+          {
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "size": $(stat -c%s server/build/libs/bridge-server.jar),
+            "workflow_run": "${{ github.run_number }}"
+          }
+          EOF
+          cat metadata.json
+
+      - name: Configure AWS CLI for R2
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws configure set default.region auto
+
+      - name: Upload to Cloudflare R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          R2_ACCOUNT_ID=$(echo "$R2_ACCOUNT_ID" | tr -d '[:space:]')
+          R2_BUCKET=$(echo "$R2_BUCKET" | tr -d '[:space:]')
+          R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+          echo "Uploading files to R2 bucket: ${R2_BUCKET}..."
+
+          aws s3 cp server/build/libs/bridge-server.jar "s3://${R2_BUCKET}/plugin/bridge-server.jar" \
+            --endpoint-url "${R2_ENDPOINT}" \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+          aws s3 cp metadata.json "s3://${R2_BUCKET}/plugin/metadata.json" \
+            --endpoint-url "${R2_ENDPOINT}" \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "application/json"
+
+          echo "Files uploaded successfully to R2!"
