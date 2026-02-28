@@ -1,6 +1,9 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: all server loader proto widgets codegen test format clean build help kill
+# Auto-detect: use uv if available, else system python
+PYTHON := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo "python3")
+
+.PHONY: all server loader proto widgets codegen resources test format clean build help kill restart
 
 all: proto server widgets codegen resources  ## Build everything
 
@@ -8,19 +11,34 @@ server:         ## Build Java gRPC server
 	cd server && ./gradlew shadowJar -q
 
 loader:         ## Build C loader
-	$(MAKE) -C loader
+	@[ -d loader ] && $(MAKE) -C loader || echo "loader directory not found, skipping"
 
 proto:          ## Generate proto stubs (Python)
-	buf generate
+	@if command -v buf >/dev/null 2>&1; then \
+		buf generate; \
+	else \
+		mkdir -p escape/_proto/bridge/v1; \
+		touch escape/_proto/__init__.py escape/_proto/bridge/__init__.py escape/_proto/bridge/v1/__init__.py; \
+		python3 -m grpc_tools.protoc \
+			-I proto \
+			--python_out=escape/_proto \
+			--grpc_python_out=escape/_proto \
+			--mypy_out=escape/_proto \
+			--mypy_grpc_out=escape/_proto \
+			proto/bridge/v1/bridge.proto; \
+	fi
 
 widgets:        ## Generate widget field constants from proto enum
-	uv run python scripts/widget_generator.py
+	$(PYTHON) scripts/widget_generator.py
 
 codegen:        ## Generate constants from RuneLite gameval
-	uv run python scripts/constant_generator.py
+	$(PYTHON) scripts/constant_generator.py
 
 resources:      ## Download game resources (varps, objects, graph)
-	uv run python scripts/resource_generator.py
+	$(PYTHON) scripts/resource_generator.py
+
+restart:        ## Restart RuneLite with updated bridge (VM only)
+	@runelite-restart
 
 test:           ## Run all checks (ruff, basedpyright, pytest)
 	uv run ruff check escape/ tests/ && uv run ruff format escape/ tests/ && uv run basedpyright escape/ && uv run pytest -q
@@ -35,7 +53,7 @@ clean:          ## Remove caches and build artifacts
 	rm -rf server/bin/
 	rm -rf escape/_proto/
 	rm -f escape/constants/*.py escape/constants/.version
-	$(MAKE) -C loader clean
+	@[ -d loader ] && $(MAKE) -C loader clean || true
 	rm -rf .venv
 
 kill:           ## Kill RuneLite and clean up socket
