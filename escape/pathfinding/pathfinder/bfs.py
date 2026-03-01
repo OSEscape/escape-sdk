@@ -16,6 +16,7 @@ from escape.pathfinding._native import (
     bfs_find_any_target as _bfs_find_any_target_native,
     bfs_find_k_targets as _bfs_find_k_targets_native,
     bfs_pathfind as _bfs_pathfind_native,
+    get_valid_neighbors_py as _get_valid_neighbors,
 )
 
 
