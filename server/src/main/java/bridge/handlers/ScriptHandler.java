@@ -61,9 +61,10 @@ public class ScriptHandler implements EventHandler {
 
         int strCount = request.getStringResultCount();
         if (strCount > 0) {
-            String[] stringStack = client.getStringStack();
-            for (int i = 0; i < strCount && i < stringStack.length; i++) {
-                response.addStringResults(stringStack[i] != null ? stringStack[i] : "");
+            Object[] objectStack = client.getObjectStack();
+            for (int i = 0; i < strCount && i < objectStack.length; i++) {
+                Object val = objectStack[i];
+                response.addStringResults(val instanceof String ? (String) val : "");
             }
         }
 

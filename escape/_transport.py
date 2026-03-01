@@ -8,8 +8,12 @@ from bridge.v1 import bridge_pb2_grpc  # pyright: ignore[reportMissingImports]
 
 __all__ = ["DIRECT_METADATA", "AsyncTransport", "Transport"]
 
-SOCKET_PATH = os.environ.get("BRIDGE_SOCKET") or f"{os.environ['XDG_RUNTIME_DIR']}/bridge.sock"
 DIRECT_METADATA: list[tuple[str, str]] = [("direct-execution", "true")]
+
+
+def _default_socket_path() -> str:
+    """Resolve socket path lazily to avoid crashing on import when XDG_RUNTIME_DIR is unset."""
+    return os.environ.get("BRIDGE_SOCKET") or f"{os.environ['XDG_RUNTIME_DIR']}/bridge.sock"
 
 
 class Transport:
@@ -24,7 +28,7 @@ class Transport:
         return cls._instance
 
     def _init(self, socket_path: str | None = None) -> None:
-        path = socket_path or SOCKET_PATH
+        path = socket_path or _default_socket_path()
         self._channel = grpc.insecure_channel(f"unix://{path}")
         self._stub = bridge_pb2_grpc.BridgeServiceStub(self._channel)
 
@@ -52,7 +56,7 @@ class AsyncTransport:
         return cls._instance
 
     def _init(self, socket_path: str | None = None) -> None:
-        path = socket_path or SOCKET_PATH
+        path = socket_path or _default_socket_path()
         self._channel = grpc.aio.insecure_channel(f"unix://{path}")
         self._stub = bridge_pb2_grpc.BridgeServiceStub(self._channel)
 
