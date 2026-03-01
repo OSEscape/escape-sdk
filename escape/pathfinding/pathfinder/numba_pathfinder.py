@@ -52,29 +52,6 @@ class NumbaPathfinder:
         self._fwd_queue = np.empty(queue_size, dtype=np.int64)
         self._fwd_parent = np.empty(queue_size, dtype=np.int32)
 
-        # Warm up native extension
-        self._warmup()
-
-    def _warmup(self):
-        """Warm up JIT compilation for BFS."""
-        # Use min_x/min_y from rg[4]/rg[5]
-        dummy_start = _pack_point(int(self._rg[4]) + 10, int(self._rg[5]) + 10, 0)
-        dummy_target = _pack_point(int(self._rg[4]) + 15, int(self._rg[5]) + 15, 0)
-        _bfs_pathfind_bitpacked(
-            dummy_start,
-            dummy_target,
-            self.grid.flags_data,
-            self.grid.region_index,
-            self._fwd_regions,
-            self._fwd_region_allocated,
-            self._fwd_active_regions,
-            self._fwd_queue,
-            self._fwd_parent,
-            self._rg,
-            100,
-        )
-        self._reset_visited()
-
     def _reset_visited(self):
         """Reset visited regions using fast numpy operations."""
         # Find allocated region indices with numpy (fast)
