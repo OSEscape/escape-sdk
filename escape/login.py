@@ -15,7 +15,7 @@ from escape.geometry import Box
 from escape.timing import sleep, wait_until
 from escape.widget import Buttons
 
-CREDENTIALS_PATH = Path.home() / "alpine" / "credentials" / "credentials.json"
+CREDENTIALS_PATH = Path.home() / "credentials" / "credentials.json"
 
 # 20x20 boxes centred on each button
 _EULA_ACCEPT = Box(292, 304, 20, 20)  # login_index 12

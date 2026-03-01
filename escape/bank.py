@@ -46,7 +46,7 @@ _BANKPIN_BUTTON_IDS = [
     InterfaceID.BankpinKeypad.J,
 ]
 
-_CREDENTIALS_PATH = Path.home() / "alpine" / "credentials" / "credentials.json"
+CREDENTIALS_PATH = Path.home() / "credentials" / "credentials.json"
 
 
 class Bank(ItemContainer):
