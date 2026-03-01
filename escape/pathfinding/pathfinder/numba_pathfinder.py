@@ -1,4 +1,4 @@
-"""Numba-accelerated BFS pathfinder."""
+"""Tile-level BFS pathfinder."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class NumbaPathfinder:
-    """High-performance BFS pathfinder using Numba JIT compilation."""
+    """High-performance BFS pathfinder using Rust native extension."""
 
     __slots__ = (
         "_fwd_active_regions",
@@ -52,7 +52,7 @@ class NumbaPathfinder:
         self._fwd_queue = np.empty(queue_size, dtype=np.int64)
         self._fwd_parent = np.empty(queue_size, dtype=np.int32)
 
-        # Warm up numba compilation
+        # Warm up native extension
         self._warmup()
 
     def _warmup(self):

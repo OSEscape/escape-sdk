@@ -1,4 +1,4 @@
-"""Pathfinding modules including graph pathfinder and Numba-accelerated BFS."""
+"""Pathfinding modules including graph pathfinder and tile-level BFS."""
 
 from escape.pathfinding.pathfinder.graph_pathfinder import GraphPathfinder
 from escape.pathfinding.pathfinder.numba_pathfinder import NumbaPathfinder

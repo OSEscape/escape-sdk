@@ -1,4 +1,4 @@
-"""Region-indexed bitpacked collision data for fast Numba access.
+"""Region-indexed bitpacked collision data for fast native access.
 
 Instead of dense (4, height, width) bool arrays (~656MB), stores collision flags
 as bitpacked regions (~8MB). Each 64x64 region is 4096 bytes:
@@ -38,9 +38,9 @@ class FastPathResult:
 
 
 class CollisionGrid:
-    """Region-indexed bitpacked collision data for fast Numba access.
+    """Region-indexed bitpacked collision data for fast native access.
 
-    Data is stored as two numpy arrays that Numba can index directly:
+    Data is stored as two numpy arrays that native code can index directly:
     - flags_data (uint8): concatenated bitpacked regions
     - region_index (int32): maps region slot -> byte offset in flags_data (-1 if empty)
     - rg (int32[6]): [region_cols, region_rows, min_region_x, min_region_y, min_x, min_y]

@@ -2,13 +2,13 @@
 
 from escape.pathfinding.core.enums import OrdinalDirection, TransportType
 
-# world_point imports are deferred to avoid requiring numba at import time.
+# world_point imports are deferred to avoid circular imports at import time.
 # Import directly from .world_point when needed:
 #   from escape.pathfinding.core.world_point import pack_world_point
 
 
 def __getattr__(name: str):
-    """Lazy import for world_point symbols (requires numba)."""
+    """Lazy import for world_point symbols."""
     _world_point_names = {
         "WorldArea",
         "WorldPoint",

@@ -1,1 +1,1 @@
-"""Graph-based pathfinding engine with Numba-accelerated tile BFS."""
+"""Graph-based pathfinding engine with Rust-native tile BFS."""
