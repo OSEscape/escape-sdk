@@ -44,6 +44,9 @@ service BridgeService {
   rpc SetCredentials(SetCredentialsRequest) returns (google.protobuf.Empty);
   rpc GetLoginIndex(google.protobuf.Empty) returns (GetLoginIndexResponse);
 
+  // Client scripts
+  rpc RunScript(RunScriptRequest) returns (RunScriptResponse);
+
   // Streaming - server pushes updates, client sends subscribe/ack
   rpc Subscribe(stream ClientMessage) returns (stream ServerMessage);
 }
@@ -661,4 +664,27 @@ message SetCredentialsRequest {
 
 message GetLoginIndexResponse {
   int32 login_index = 1;
+}
+
+// =============================================================================
+// Client Scripts (CS2)
+// =============================================================================
+
+message ScriptArg {
+  oneof value {
+    int32 int_value = 1;
+    string string_value = 2;
+  }
+}
+
+message RunScriptRequest {
+  int32 script_id = 1;
+  repeated ScriptArg args = 2;
+  int32 int_result_count = 3;    // How many ints to read from stack after execution
+  int32 string_result_count = 4; // How many strings to read from stack after execution
+}
+
+message RunScriptResponse {
+  repeated int32 int_results = 1;
+  repeated string string_results = 2;
 }

@@ -73,6 +73,7 @@ public class BridgePlugin extends Plugin {
     private EventHandler clickboxHandler;
     private EventHandler drawingHandler;
     private EventHandler loginHandler;
+    private EventHandler scriptHandler;
 
     @Override
     protected void startUp() {
@@ -91,6 +92,7 @@ public class BridgePlugin extends Plugin {
         drawingHandler = new DrawingHandler(overlayManager);
         clickboxHandler = new ClickboxHandler(client, subscribeHandler, overlayManager);
         loginHandler = new LoginHandler(client);
+        scriptHandler = new ScriptHandler(client);
 
         // Initialize all handlers
         chatHandler.initialize();
@@ -104,6 +106,7 @@ public class BridgePlugin extends Plugin {
         drawingHandler.initialize();
         clickboxHandler.initialize();
         loginHandler.initialize();
+        scriptHandler.initialize();
 
         // Build service via reflection - handlers are auto-discovered by method name convention
         ServerServiceDefinition service = new ReflectiveServiceBuilder(clientThread)
@@ -114,6 +117,7 @@ public class BridgePlugin extends Plugin {
             .addHandler((DrawingHandler) drawingHandler)
             .addHandler((WorldHandler) worldHandler)
             .addHandler((LoginHandler) loginHandler)
+            .addHandler((ScriptHandler) scriptHandler)
             .build();
 
         ClassLoader pluginClassLoader = this.getClass().getClassLoader();
@@ -183,6 +187,7 @@ public class BridgePlugin extends Plugin {
         if (clickboxHandler != null) clickboxHandler.shutdown();
         if (drawingHandler != null) drawingHandler.shutdown();
         if (loginHandler != null) loginHandler.shutdown();
+        if (scriptHandler != null) scriptHandler.shutdown();
 
         if (grpcServer != null) {
             if (healthManager != null) {
