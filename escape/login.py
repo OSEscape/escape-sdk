@@ -60,7 +60,7 @@ def is_logged_in() -> bool:
     if result and not InterfaceID.TOPLEVEL in s.cache.active_interfaces:
         from escape.script import run_script
         run_script(3998, 0)
-        run_script(3998, 15, 20) # max brightness
+        run_script(3966, 15, 20) # max brightness
         logger.debug("Forced fixed modeto open after login")
     return result
 
