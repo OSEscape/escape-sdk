@@ -57,6 +57,11 @@ def is_logged_in() -> bool:
         logger.debug(
             f"Not logged in (game_state={s.cache.game_state}, welcome_open={_welcome_open()})"
         )
+    if result and not InterfaceID.TOPLEVEL in s.cache.active_interfaces:
+        from escape.script import run_script
+        run_script(3998, 0)
+        run_script(3998, 15, 20) # max brightness
+        logger.debug("Forced fixed modeto open after login")
     return result
 
 
@@ -68,19 +73,19 @@ def login(timeout: float = 30.0) -> bool:
     if is_logged_in():
         logger.info("Already logged in")
         _dismiss_welcome_screen()
-        return True
-
-    creds = json.loads(CREDENTIALS_PATH.read_text())
-    username = creds["username"]
-    password = creds["password"]
+        return is_logged_in()
 
     s = Services.get()
 
     if _welcome_open():
         _dismiss_welcome_screen()
-        return True
+        return is_logged_in()
 
     import time
+    
+    creds = json.loads(CREDENTIALS_PATH.read_text())
+    username = creds.get("username", "")
+    password = creds.get("password", "")
 
     deadline = time.time() + timeout
     fail_count = 0
@@ -93,15 +98,16 @@ def login(timeout: float = 30.0) -> bool:
             logger.info("Login complete")
             wait_until(lambda: _welcome_open(), timeout=5.0)
             _dismiss_welcome_screen()
-            return True
+            return is_logged_in()
 
         if state != "LOGIN_SCREEN":
             sleep(0.6)
             continue
 
-        if state == "LOADING":
+        if state == "LOADING":  # is_logged_in() already checks returns true if loading, so this only happens right after logging in and not during chunk load times
             logger.debug("Game is loading, waiting")
             wait_until(lambda: s.cache.game_state != "LOADING", timeout=15.0)
+            time.sleep(1.0)  # give it a moment to update the state after loading
             continue
 
         login_index = s.stub.GetLoginIndex(Empty()).login_index
