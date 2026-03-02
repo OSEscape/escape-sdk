@@ -60,6 +60,7 @@ sourceSets {
 tasks.shadowJar {
     archiveFileName.set("bridge-server.jar")
     mergeServiceFiles()
+    minimize()
 
     relocate("com.google.protobuf", "bridge.shaded.protobuf")
     relocate("io.grpc", "bridge.shaded.grpc") {
@@ -68,4 +69,22 @@ tasks.shadowJar {
     relocate("com.google.common", "bridge.shaded.guava")
     relocate("io.perfmark", "bridge.shaded.perfmark")
     relocate("org.slf4j", "bridge.shaded.slf4j")
+
+    // Strip unnecessary transitive deps
+    exclude("com/google/api/**")
+    exclude("com/google/cloud/**")
+    exclude("com/google/rpc/**")
+    exclude("com/google/type/**")
+    exclude("com/google/gson/**")
+    exclude("org/checkerframework/**")
+    exclude("javax/annotation/**")
+    exclude("google/**")
+
+    // Linux only - strip non-Linux native libs
+    exclude("META-INF/native/*.dll")
+    exclude("META-INF/native/*.jnilib")
+    exclude("META-INF/native/*_osx_*")
+    exclude("META-INF/native/*_windows_*")
+    exclude("META-INF/native-image/**/windows-*/**")
+    exclude("META-INF/native-image/**/osx-*/**")
 }
