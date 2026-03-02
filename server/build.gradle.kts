@@ -60,7 +60,10 @@ sourceSets {
 tasks.shadowJar {
     archiveFileName.set("bridge-server.jar")
     mergeServiceFiles()
-    minimize()
+    minimize {
+        // Netty loads epoll transport via reflection
+        exclude(dependency("io.grpc:grpc-netty-shaded:.*"))
+    }
 
     relocate("com.google.protobuf", "bridge.shaded.protobuf")
     relocate("io.grpc", "bridge.shaded.grpc") {

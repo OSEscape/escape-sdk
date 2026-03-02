@@ -15,19 +15,13 @@ loader:         ## Build C loader
 	@[ -d loader ] && $(MAKE) -C loader || echo "loader directory not found, skipping"
 
 proto:          ## Generate proto stubs (Python)
-	@if command -v buf >/dev/null 2>&1; then \
-		buf generate; \
-	else \
-		mkdir -p escape/_proto/bridge/v1; \
-		touch escape/_proto/__init__.py escape/_proto/bridge/__init__.py escape/_proto/bridge/v1/__init__.py; \
-		python3 -m grpc_tools.protoc \
-			-I proto \
-			--python_out=escape/_proto \
-			--grpc_python_out=escape/_proto \
-			--mypy_out=escape/_proto \
-			--mypy_grpc_out=escape/_proto \
-			proto/bridge/v1/bridge.proto; \
-	fi
+	@mkdir -p escape/_proto/bridge/v1
+	@touch escape/_proto/__init__.py escape/_proto/bridge/__init__.py escape/_proto/bridge/v1/__init__.py
+	$(PYTHON) -m grpc_tools.protoc \
+		-I proto \
+		--python_out=escape/_proto \
+		--grpc_python_out=escape/_proto \
+		proto/bridge/v1/bridge.proto
 
 widgets:        ## Generate widget field constants from proto enum
 	$(PYTHON) scripts/widget_generator.py
