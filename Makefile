@@ -6,6 +6,7 @@ PYTHON := $(shell command -v uv >/dev/null 2>&1 && echo "uv run python" || echo 
 .PHONY: all server loader proto widgets codegen resources test format clean build help kill restart
 
 all: proto server widgets codegen resources  ## Build everything
+allbutserver: proto widgets codegen resources  ## Build everything but server
 
 server:         ## Build Java gRPC server
 	cd server && ./gradlew shadowJar -q
